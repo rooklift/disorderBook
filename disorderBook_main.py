@@ -211,7 +211,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		try:
 			decomp = path.split("/")
 		except Exception as e:
-			send_exception(e)
+			self.send_exception(e)
 			return
 		
 		try:
