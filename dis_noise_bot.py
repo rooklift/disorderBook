@@ -65,38 +65,44 @@ def cancel(venue, symbol, id, verbose=False, require_ok=True):
 def quote(venue, symbol, verbose=False):
 	return get_json_from_url(_API_URL + "venues/{}/stocks/{}/quote".format(venue, symbol), verbose = verbose)
 
-with open("DEFAULT_STOCK.txt") as infile:
-	venue, symbol = infile.readline().split()
+
+def main():
+	with open("DEFAULT_STOCK.txt") as infile:
+		venue, symbol = infile.readline().split()
 
 
-account = "NOISE" + str(random.randint(0,999999))
+	account = "NOISE" + str(random.randint(0,999999))
 
-orderType = "limit"
+	orderType = "limit"
 
-all_orders = []
+	all_orders = []
 
-while 1:
-	try:
-		price = quote(venue, symbol)["last"]
-		if price == 0:
+	while 1:
+		try:
+			price = quote(venue, symbol)["last"]
+			if price == 0:
+				price = 5000
+		except:
 			price = 5000
-	except:
-		price = 5000
-	price += random.randint(-200, 200)
-	qty = 100
-	qty += random.randint(-20, 20)
-	direction = random.choice(["buy", "sell"])
-	
-	r = execute(venue, symbol,
-			json.dumps({"price" : price, "qty" : qty, "direction" : direction, "orderType" : orderType, "account" : account, "venue" : venue, "symbol" : symbol}),
-			verbose = True)
-	try:
-		id = r["id"]
-		all_orders.append(id)
-	except:
-		print("Trouble getting ID.")
+		price += random.randint(-200, 200)
+		qty = 100
+		qty += random.randint(-20, 20)
+		direction = random.choice(["buy", "sell"])
+		
+		r = execute(venue, symbol,
+				json.dumps({"price" : price, "qty" : qty, "direction" : direction, "orderType" : orderType, "account" : account, "venue" : venue, "symbol" : symbol}),
+				verbose = True)
+		try:
+			id = r["id"]
+			all_orders.append(id)
+		except:
+			print("Trouble getting ID.")
 
-	time.sleep(0.5)
-	if len(all_orders) > 10:
-		id = all_orders.pop(0)
-		cancel(venue, symbol, id)
+		time.sleep(0.5)
+		if len(all_orders) > 10:
+			id = all_orders.pop(0)
+			cancel(venue, symbol, id)
+
+
+if __name__ == "__main__":
+	main()

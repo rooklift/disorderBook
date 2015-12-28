@@ -1,7 +1,7 @@
 import http.server, json
 import disorderBook_book as book
 
-GENERIC_ERROR = '{"ok": false, "error": "Something bad happened"}'
+GENERIC_ERROR = '{"ok": false, "error": "Could not determine handler for request"}'
 
 all_venues_and_symbols = dict()
 
@@ -26,6 +26,12 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(s.encode(encoding="ascii"))
 	
+	def send_exception(self, e):
+		self.send_response(400)
+		self.end_headers()
+		msg = '"ok": "false", "error" : "{}"'.format(e)
+		self.wfile.write(e.encode(encoding="ascii"))
+	
 	def do_GET(self):
 		path = self.path
 		
@@ -44,8 +50,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			if decomp[-1] == "heartbeat" and "/venues/" not in path:
 				self.send_string({"ok": True, "error": ""})
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 			
 		# ----------- VENUE HEARTBEAT ------------------------------------------------
@@ -54,8 +60,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			if decomp[-1] == "heartbeat" and decomp[-3] == "venues":
 				self.send_string({"ok": True, "venue": decomp[-2]})
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- STOCK LIST -----------------------------------------------------
@@ -65,8 +71,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				ret = {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for (venue, symbol) in all_venues_and_symbols.keys() if venue == decomp[-2]]}
 				self.send_string(ret)
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- ORDERBOOK ------------------------------------------------------
@@ -80,8 +86,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- QUOTE ----------------------------------------------------------
@@ -95,8 +101,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- STATUS ---------------------------------------------------------
@@ -111,8 +117,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- STATUS ALL ORDERS ----------------------------------------------
@@ -121,8 +127,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			if decomp[-1] == "orders" and decomp[-3] == "accounts" and decomp[-5] == "venues":
 				self.send_string('{"ok": false, "error": "not implemented"}')
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- STATUS ALL ORDERS IN STOCK -------------------------------------
@@ -137,8 +143,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		self.send_bad(GENERIC_ERROR)
@@ -152,8 +158,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			decomp = path.split("/")
-		except:
-			self.send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- MAKE AN ORDER -------------------------------------
@@ -172,8 +178,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			self.send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		# ----------- CANCEL AN ORDER -----------------------------------
@@ -190,8 +196,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			self.send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		self.send_bad(GENERIC_ERROR)
@@ -204,8 +210,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			decomp = path.split("/")
-		except:
-			self.send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		try:
@@ -219,15 +225,16 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				assert(ret)
 				self.send_string(ret)
 				return
-		except:
-			self.send_bad(GENERIC_ERROR)
+		except Exception as e:
+			send_exception(e)
 			return
 		
 		self.send_bad(GENERIC_ERROR)
 		return
-		
+
+
 PORT = 8000
-server_address = ('', PORT)
+server_address = ("localhost", PORT)
 httpd = http.server.HTTPServer(server_address, StockFighterHandler)
 print("disorderBook running on port {}...".format(PORT))
 httpd.serve_forever()
