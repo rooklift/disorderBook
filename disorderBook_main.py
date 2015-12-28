@@ -226,7 +226,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				self.send_string(ret)
 				return
 		except Exception as e:
-			send_exception(e)
+			self.send_exception(e)
 			return
 		
 		self.send_bad(GENERIC_ERROR)
