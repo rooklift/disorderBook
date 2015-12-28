@@ -115,7 +115,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			send_bad(GENERIC_ERROR)
 			return
 		
-		# ----------- STATUS ALL ORDERS ----------------------------------------------			# Why is this so slow?
+		# ----------- STATUS ALL ORDERS ----------------------------------------------
 		
 		try:
 			if decomp[-1] == "orders" and decomp[-3] == "accounts" and decomp[-5] == "venues":
