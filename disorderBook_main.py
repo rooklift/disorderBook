@@ -30,7 +30,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		self.send_response(400)
 		self.end_headers()
 		msg = '"ok": "false", "error" : "{}"'.format(e)
-		self.wfile.write(e.encode(encoding="ascii"))
+		self.wfile.write(msg.encode(encoding="ascii"))
 	
 	def do_GET(self):
 		path = self.path
