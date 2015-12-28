@@ -1,8 +1,6 @@
 # disorderBook
 A probably-too-slow implementation of Stockfighter in Python
 
-disorderBook is a Stockfighter implementation.
-
 Usage:
 
 * Run disorderBook_main.py
