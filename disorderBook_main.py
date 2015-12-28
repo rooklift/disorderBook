@@ -182,7 +182,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			self.send_exception(e)
 			return
 		
-		# ----------- CANCEL AN ORDER -----------------------------------
+		# ----------- POST METHOD CANCEL AN ORDER -----------------------
 		
 		try:
 			if decomp[-1] == "cancel" and decomp[-3] == "orders" and decomp[-5] == "stocks" and decomp[-7] == "venues":
