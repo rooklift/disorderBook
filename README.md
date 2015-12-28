@@ -5,7 +5,8 @@ A probably-too-slow implementation of [Stockfighter](http://stockfighter.io) in 
 
 * Run disorderBook_main.py
 * Connect your trading bots to http://localhost:8000/ob/api/
-* They can use whatever accounts, venues, and symbols they like
+* Don't use https
+* Your bots can use whatever accounts, venues, and symbols they like
 
 **Issues:**
 
