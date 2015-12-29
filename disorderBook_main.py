@@ -12,25 +12,20 @@ def create_book_if_needed(venue, symbol):
 
 class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	
-	def send_string(self, s):
+	def send_json(self, s, code = 200):
 		if type(s) == dict or type(s) == book.Order:
 			s = json.dumps(s)
-		self.send_response(200)
+		self.send_response(code)
+		self.send_header("Content-Type", "application/json")
 		self.end_headers()
 		self.wfile.write(s.encode(encoding="ascii"))
 		
 	def send_bad(self, s):
-		if type(s) == dict or type(s) == book.Order:
-			s = json.dumps(s)
-		self.send_response(400)
-		self.end_headers()
-		self.wfile.write(s.encode(encoding="ascii"))
+		self.send_json(s, 400)
 	
 	def send_exception(self, e):
-		self.send_response(400)
-		self.end_headers()
-		msg = '{' + '"ok": "false", "error" : "{}"'.format(e) + '}'
-		self.wfile.write(msg.encode(encoding="ascii"))
+		msg = '{{"ok": "false", "error" : "{}"}}'.format(e)
+		self.send_json(msg, 400)
 	
 	def do_GET(self):
 		path = self.path
@@ -39,7 +34,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			decomp = path.split("/")
 			decomp = [""] * 7 + decomp		# To ensure our checks don't cause IndexError
 		except:
-			send_bad(GENERIC_ERROR)
+			self.send_bad(GENERIC_ERROR)
 			return
 		
 		# What follows is an incredibly crude way of guessing what type of request
@@ -49,7 +44,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "heartbeat" and "/venues/" not in path:
-				self.send_string({"ok": True, "error": ""})
+				self.send_json({"ok": True, "error": ""})
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -59,7 +54,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "heartbeat" and decomp[-3] == "venues":
-				self.send_string({"ok": True, "venue": decomp[-2]})
+				self.send_json({"ok": True, "venue": decomp[-2]})
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -77,7 +72,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 					ret = {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in symbol_list]}
 				else:
 					ret = {"ok" : True, "symbols" : [{"symbol" : "CATS", "name" : "Use any symbol you like"}]}
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -92,7 +87,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_book()
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -107,7 +102,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_quote()
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -123,7 +118,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_status(id)
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -133,7 +128,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "orders" and decomp[-3] == "accounts" and decomp[-5] == "venues":
-				self.send_string('{"ok": false, "error": "not implemented"}')
+				self.send_bad('{"ok": false, "error": "not implemented"}')
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -149,7 +144,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_all_orders(account)
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -184,7 +179,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			
 				ret = all_venues_and_symbols[(venue, symbol)].parse_order(data)
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -202,7 +197,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].cancel_order(id)
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -231,7 +226,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].cancel_order(id)
 				assert(ret)
-				self.send_string(ret)
+				self.send_json(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
