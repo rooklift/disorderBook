@@ -69,7 +69,14 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "stocks" and decomp[-3] == "venues":
-				ret = {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for (venue, symbol) in all_venues_and_symbols.keys() if venue == decomp[-2]]}
+				symbol_list = []
+				for venue, symbol in all_venues_and_symbols.keys():
+					if venue == decomp[-2]:
+						symbol_list.append(symbol)
+				if symbol_list:
+					ret = {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in symbol_list]}
+				else:
+					ret = {"ok" : True, "symbols" : [{"symbol" : "CATS", "name" : "Use any symbol you like"}]}
 				self.send_string(ret)
 				return
 		except Exception as e:
