@@ -37,6 +37,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			decomp = path.split("/")
+			decomp = [""] * 7 + decomp		# To ensure our checks don't cause IndexError
 		except:
 			send_bad(GENERIC_ERROR)
 			return
