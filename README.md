@@ -7,6 +7,7 @@ A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)**
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 * Your bots can use whatever accounts, venues, and symbols they like
+* (New exchanges are created as needed when someone tries to do something on them)
 * One noise-bot (i.e. randomish trades) is included - you must start it (or many copies) manually
 
 **Issues:**
