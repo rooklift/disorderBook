@@ -29,7 +29,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	def send_exception(self, e):
 		self.send_response(400)
 		self.end_headers()
-		msg = '{"ok": "false", "error" : "{}"}'.format(e)
+		msg = '{' + '"ok": "false", "error" : "{}"'.format(e) + '}'
 		self.wfile.write(msg.encode(encoding="ascii"))
 	
 	def do_GET(self):
