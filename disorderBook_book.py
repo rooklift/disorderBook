@@ -292,9 +292,11 @@ class OrderBook ():
 			actually_stated_price = order["price"]
 			
 			if order["direction"] == "buy":
-				order["price"] = self.asks[-1]["price"]		# We use the cheap trick of temporarily setting the order's price to the worst one on the book
+				if self.asks:
+					order["price"] = self.asks[-1]["price"]		# We use the cheap trick of temporarily setting the order's price to the worst one on the book
 			else:
-				order["price"] = self.bids[-1]["price"]
+				if self.bids:
+					order["price"] = self.bids[-1]["price"]
 			
 			self.run_order(order)
 			
