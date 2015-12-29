@@ -245,6 +245,9 @@ class OrderBook ():
 	def parse_order(self, info):
 		
 		assert(info["venue"] == self.venue)
+                # Match behavior of real Stockfighter: recognize both `symbol` and `stock`.
+		if "stock" in info:
+			info["symbol"] = info["stock"]
 		assert(info["symbol"] == self.symbol)
 		assert(info["direction"] in ["buy", "sell"])
 		assert(info["qty"] > 0)
@@ -338,6 +341,3 @@ class OrderBook ():
 					bisect.insort(self.asks, order)
 		
 		return order
-	
-	
-		
