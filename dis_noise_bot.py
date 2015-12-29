@@ -2,9 +2,7 @@ import json, random, requests, time
 
 _API_URL = "http://127.0.0.1:8000/ob/api/"
 
-_API_KEY_FILE = "api_key.txt"
-
-_api_key = open(_API_KEY_FILE).read().strip()
+_api_key = "unused"
 _api_cookie_text = "api_key={}".format(_api_key)
 _extra_headers = {"X-Starfighter-Authorization" : _api_key, "Cookie" : _api_cookie_text}
 
@@ -84,9 +82,9 @@ def main():
 				price = 5000
 		except:
 			price = 5000
-		price += random.randint(-200, 200)
+		price += random.randint(-100, 100)
 		qty = 100
-		qty += random.randint(-20, 20)
+		qty += random.randint(-50, 50)
 		direction = random.choice(["buy", "sell"])
 		
 		r = execute(venue, symbol,
