@@ -13,7 +13,7 @@ def create_book_if_needed(venue, symbol):
 class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	
 	def send_json(self, s, code = 200):
-		if type(s) == dict or type(s) == book.Order:
+		if isinstance(s, dict):
 			s = json.dumps(s)
 		self.send_response(code)
 		self.send_header("Content-Type", "application/json")
