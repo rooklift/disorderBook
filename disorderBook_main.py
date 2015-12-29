@@ -173,7 +173,12 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				data = json.loads(data)
 
 				venue = data["venue"]
-				symbol = data["symbol"]
+
+				# Match behavior of real Stockfighter: recognize both these forms
+				if "stock" in data:
+					symbol = data["stock"]
+				elif "symbol" in data:
+					symbol = data["symbol"]
 			
 				create_book_if_needed(venue, symbol)
 			
