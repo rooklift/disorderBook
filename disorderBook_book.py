@@ -2,7 +2,7 @@ import bisect, datetime, json
 
 
 def current_timestamp():
-	return str(datetime.datetime.utcnow().isoformat())
+	return str(datetime.datetime.utcnow().isoformat())		# Thanks to medecau for this
 	
 
 class Order (dict):
@@ -81,7 +81,11 @@ class Order (dict):
 			if o["qty"] == 0:
 				o["open"] = False
 
-		
+
+# For the orderbook itself, the general plan is to keep a list of bids and a list of asks,
+# both always kept sorted (never sorted as a whole), with the top priority order first in line.
+# Incoming orders can then just iterate through the list until they're done.
+
 class OrderBook ():
 	def __init__(self, venue, symbol):
 		self.venue = str(venue)
