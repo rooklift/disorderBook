@@ -12,7 +12,7 @@ def create_book_if_needed(venue, symbol):
 
 class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	
-	def send_json(self, s, code = 200):
+	def send_whatever(self, s, code = 200):		# Accepts strings or dicts (converts to JSON in that case)
 		if isinstance(s, dict):
 			s = json.dumps(s)
 		self.send_response(code)
@@ -21,11 +21,11 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		self.wfile.write(s.encode(encoding="ascii"))
 		
 	def send_bad(self, s):
-		self.send_json(s, 400)
+		self.send_whatever(s, 400)
 	
 	def send_exception(self, e):
-		msg = '{{"ok": "false", "error" : "{}"}}'.format(e)
-		self.send_json(msg, 400)
+		msg = '{{"ok": false, "error": "{}"}}'.format(e)
+		self.send_whatever(msg, 400)
 	
 	def do_GET(self):
 		path = self.path
@@ -44,7 +44,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "heartbeat" and "/venues/" not in path:
-				self.send_json({"ok": True, "error": ""})
+				self.send_whatever('{"ok": true, "error": ""}')
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -54,7 +54,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "heartbeat" and decomp[-3] == "venues":
-				self.send_json({"ok": True, "venue": decomp[-2]})
+				self.send_whatever('{{"ok": true, "venue": "{}"}}'.format(decomp[-2]))
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -65,14 +65,21 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		try:
 			if decomp[-1] == "stocks" and decomp[-3] == "venues":
 				symbol_list = []
-				for venue, symbol in all_venues_and_symbols.keys():
+				for (venue, symbol) in all_venues_and_symbols:	# Getting this tuple from the keys
 					if venue == decomp[-2]:
 						symbol_list.append(symbol)
 				if symbol_list:
-					ret = {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in symbol_list]}
+					ret = {
+							"ok" : True,
+							"symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in symbol_list]
+						}
 				else:
-					ret = {"ok" : True, "symbols" : [{"symbol" : "CATS", "name" : "Use any symbol you like"}]}
-				self.send_json(ret)
+					global DEFAULTSYMBOL
+					ret = {
+							"ok" : True,
+							"symbols" : [{"symbol" : DEFAULTSYMBOL, "name" : "Use any symbol you like"}]
+						}
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -87,7 +94,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_book()
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -102,7 +109,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_quote()
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -118,17 +125,32 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].get_status(id)
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
 			return
 		
-		# ----------- STATUS ALL ORDERS ----------------------------------------------
+		# ----------- STATUS ALL ORDERS ON A VENUE (ALL STOCKS) ----------------------
 		
 		try:
 			if decomp[-1] == "orders" and decomp[-3] == "accounts" and decomp[-5] == "venues":
-				self.send_bad('{"ok": false, "error": "not implemented"}')
+				account = decomp[-2]
+				request_venue = decomp[-4]
+				
+				orders = []
+				
+				for (venue, symbol) in all_venues_and_symbols:	# Getting this tuple from the keys
+					if venue == request_venue:
+						book = all_venues_and_symbols[(venue, symbol)]
+						orders += book.get_all_orders(account)["orders"]
+				
+				ret = dict()
+				ret["ok"] = True
+				ret["venue"] = request_venue
+				ret["orders"] = orders
+				
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -142,9 +164,11 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				account = decomp[-4]
 				symbol = decomp[-2]
 				create_book_if_needed(venue, symbol)
-				ret = all_venues_and_symbols[(venue, symbol)].get_all_orders(account)
+				
+				book = all_venues_and_symbols[(venue, symbol)]
+				ret = book.get_all_orders(account)
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -184,7 +208,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			
 				ret = all_venues_and_symbols[(venue, symbol)].parse_order(data)
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -202,7 +226,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].cancel_order(id)
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -231,7 +255,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				create_book_if_needed(venue, symbol)
 				ret = all_venues_and_symbols[(venue, symbol)].cancel_order(id)
 				assert(ret)
-				self.send_json(ret)
+				self.send_whatever(ret)
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -241,8 +265,19 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		return
 
 
-PORT = 8000
-server_address = ("localhost", PORT)
-httpd = http.server.HTTPServer(server_address, StockFighterHandler)
-print("disorderBook running on port {}...".format(PORT))
-httpd.serve_forever()
+if __name__ == "__main__":
+
+	# Create 1 exchange and stock so the venues list isn't empty, if we ever implement that
+	DEFAULTVENUE, DEFAULTSYMBOL = "SELLEX", "CATS"
+	try:
+		with open("DEFAULT_STOCK.txt") as infile:
+			DEFAULTVENUE, DEFAULTSYMBOL = infile.readline().split()
+	except:
+		pass
+	create_book_if_needed(DEFAULTVENUE, DEFAULTSYMBOL)
+
+	PORT = 8000
+	server_address = ("localhost", PORT)
+	httpd = http.server.HTTPServer(server_address, StockFighterHandler)
+	print("disorderBook running on port {}...".format(PORT))
+	httpd.serve_forever()
