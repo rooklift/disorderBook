@@ -198,6 +198,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 
 				venue = data["venue"]
 
+				# Thanks to cite-reader for this:
 				# Match behavior of real Stockfighter: recognize both these forms
 				if "stock" in data:
 					symbol = data["stock"]
