@@ -282,11 +282,11 @@ class OrderBook ():
 		
 		self.next_id += 1
 		
-		self.id_lookup_table[order["id"]] = order					# So we can find it for status/cancel
+		self.id_lookup_table[order["id"]] = order			# So we can find it for status/cancel
 		
 		if order["account"] not in self.account_order_lists:
 			self.account_order_lists[order["account"]] = list()
-		self.account_order_lists[order["account"]].append(order)	# So we can list all an account's orders
+		self.account_order_lists[order["account"]].append(order)		# So we can list all an account's orders
 			
 		# Limit and IOC orders are easy...
 		
