@@ -10,7 +10,7 @@ class Order (dict):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 	
-	# All the comparisons are just for bisection injection. Order should compare lower if it has higher
+	# All the comparisons are just for bisection insorting. Order should compare lower if it has higher
 	# priority, which is confusing but whatever. It means high priority orders are sorted first.
 	
 	def __eq__(self, other):
@@ -20,8 +20,6 @@ class Order (dict):
 			return False
 	
 	def __lt__(self, other):
-		assert(self["direction"] == other["direction"])
-		
 		if self["direction"] == "buy":
 			if self["price"] > other["price"]:		# We beat the other price, so we are "less" (low is better)
 				return True
@@ -31,7 +29,6 @@ class Order (dict):
 				return True
 			else:
 				return False
-		
 		else:
 			if self["price"] < other["price"]:		# We beat the other price, so we are "less" (low is better)
 				return True
