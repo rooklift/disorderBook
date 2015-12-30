@@ -3,10 +3,14 @@ import disorderBook_book as book
 
 GENERIC_ERROR = '{"ok": false, "error": "Could not determine handler for request"}'
 
-all_venues_and_symbols = dict()
+all_venues_and_symbols = dict()			# tuple (venue, symbol) ---> OrderBook object
+all_venues = set()
 
 def create_book_if_needed(venue, symbol):
 	pair = (venue, symbol)
+	
+	all_venues.add(venue)
+	
 	if pair not in all_venues_and_symbols:
 		all_venues_and_symbols[pair] = book.OrderBook(venue, symbol)
 
@@ -43,13 +47,26 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		# ----------- HEARTBEAT ------------------------------------------------------
 		
 		try:
-			if decomp[-1] == "heartbeat" and "/venues/" not in path:
+			if decomp[-1] == "heartbeat" and "venues" not in path:
 				self.send_whatever('{"ok": true, "error": ""}')
 				return
 		except Exception as e:
 			self.send_exception(e)
 			return
-			
+		
+		# ----------- VENUE LIST -----------------------------------------------------
+		
+		try:
+			if decomp[-1] == "venues":
+				ret = dict()
+				ret["ok"] = True
+				ret["venues"] = [{"name": v + " Exchange", "venue": v} for v in all_venues]
+				self.send_whatever(ret)
+				return
+		except Exception as e:
+			self.send_exception(e)
+			return
+		
 		# ----------- VENUE HEARTBEAT ------------------------------------------------
 		
 		try:
@@ -74,10 +91,10 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 							"symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in symbol_list]
 						}
 				else:
-					global DEFAULTSYMBOL
 					ret = {
 							"ok" : True,
-							"symbols" : [{"symbol" : DEFAULTSYMBOL, "name" : "Use any symbol you like"}]
+							"symbols" : [],
+							"info" : "Use any venue and symbol to create an exchange"
 						}
 				self.send_whatever(ret)
 				return
@@ -103,7 +120,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		# ----------- QUOTE ----------------------------------------------------------
 		
 		try:
-			if path.endswith("quote") and decomp[-3] == "stocks" and decomp[-5] == "venues":
+			if decomp[-1] == "quote" and decomp[-3] == "stocks" and decomp[-5] == "venues":
 				symbol = decomp[-2]
 				venue = decomp[-4]
 				create_book_if_needed(venue, symbol)
@@ -191,8 +208,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		# ----------- MAKE AN ORDER -------------------------------------
 		
-		try:
-			if not path.endswith("cancel"):
+		try:								# Any POST that's not a cancel is accepted
+			if "cancel" not in path:
 				data = str(data, encoding="ascii")
 				data = json.loads(data)
 
@@ -268,14 +285,16 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
 
-	# Create 1 exchange and stock so the venues list isn't empty, if we ever implement that
-	DEFAULTVENUE, DEFAULTSYMBOL = "SELLEX", "CATS"
+	# Create 1 exchange and stock so the venues list isn't empty.
+	# Override the defaults with a text file DEFAULT_STOCK.txt:
+	
+	defaultvenue, defaultsymbol = "DORBEX", "CATS"
 	try:
 		with open("DEFAULT_STOCK.txt") as infile:
-			DEFAULTVENUE, DEFAULTSYMBOL = infile.readline().split()
+			defaultvenue, defaultsymbol = infile.readline().split()
 	except:
 		pass
-	create_book_if_needed(DEFAULTVENUE, DEFAULTSYMBOL)
+	create_book_if_needed(defaultvenue, defaultsymbol)
 
 	PORT = 8000
 	server_address = ("localhost", PORT)
