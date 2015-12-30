@@ -2,7 +2,10 @@ import bisect, datetime, json
 
 
 def current_timestamp():
-	return str(datetime.datetime.utcnow().isoformat())		# Thanks to medecau for this
+	ts = str(datetime.datetime.utcnow().isoformat())		# Thanks to medecau for this
+	if ts[-1] != "Z":
+		ts += "Z"			# Think this is valid, anyway it matches official implementation
+	return ts
 	
 
 class Order (dict):
