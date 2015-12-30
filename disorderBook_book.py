@@ -56,7 +56,9 @@ class Order (dict):
 	
 	def __ge__(self, other):
 		if self > other or self == other:
-			return true
+			return True
+		else:
+			return False
 	
 	def __ne__(self, other):
 		if not self == other:
