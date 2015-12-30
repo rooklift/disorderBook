@@ -244,6 +244,7 @@ class OrderBook ():
 	def cancel_order(self, id):
 		order = self.id_lookup_table[int(id)]
 		if order["open"]:
+			order["qty"] = 0
 			order["open"] = False
 			self.cleanup_closed_orders()
 		return order
