@@ -77,13 +77,20 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			self.send_exception(e)
 			return
 		
-		# ----------- STOCK LIST -----------------------------------------------------
+		# ----------- STOCK LIST (2 different URLs) ----------------------------------
 		
 		try:
 			if decomp[-1] == "stocks" and decomp[-3] == "venues":
+				request_venue = decomp[-2]
+			elif decomp[-2] == "venues":
+				request_venue = decomp[-1]
+			else:
+				request_venue = None
+
+			if request_venue:
 				symbol_list = []
 				for (venue, symbol) in all_venues_and_symbols:	# Getting this tuple from the keys
-					if venue == decomp[-2]:
+					if venue == request_venue:
 						symbol_list.append(symbol)
 				if symbol_list:
 					ret = {
