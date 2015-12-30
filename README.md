@@ -11,7 +11,7 @@ A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)**
 
 * Your bots can use whatever accounts, venues, and symbols they like
 * New exchanges/stocks are created as needed when someone tries to do something on them
-* One noise-bot (i.e. randomish trades) is included - you must start it (or many copies) manually
+* Two stupid bots are included - you must start them (or many copies) manually
 
 **Issues:**
 
