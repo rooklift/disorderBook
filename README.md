@@ -19,6 +19,10 @@ A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)**
 * No authentication, anyone can cancel or see any order
 * Everything persists forever; we will eventually run out of memory
 
+**Other important differences:**
+
+* Currently, order IDs are unique per venue+stock, not per venue (e.g. on venue SELLEX, the stock CATS can have an order with an ID of 42 at the same time as stock DOGS also has an order with ID of 42)
+
 **Chances of these issues being fixed:**
 
 * Unknown, making this hurt my brain
