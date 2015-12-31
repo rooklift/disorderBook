@@ -30,7 +30,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	
 	def send_whatever(self, s, code = 200):		# Accepts strings or dicts (converts to JSON in that case)
 		if isinstance(s, dict):
-			s = json.dumps(s)
+			s = json.dumps(s, indent = 2)
 		self.send_response(code)				# Sends http first line e.g. "HTTP/1.1 200 OK", plus Server and Date lines
 		self.send_header("Content-Type", "application/json")
 		self.end_headers()
