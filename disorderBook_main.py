@@ -100,10 +100,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				request_venue = None
 
 			if request_venue is not None:
-				symbol_list = []
-				for (venue, symbol) in venue_symbol_book_map:	# Getting this tuple from the keys
-					if venue == request_venue:
-						symbol_list.append(symbol)
+				symbol_list = [symbol for (venue, symbol) in venue_symbol_book_map if venue == request_venue]
+				
 				if symbol_list:
 					ret = {
 							"ok" : True,
@@ -127,6 +125,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			if decomp[-2] == "stocks" and decomp[-4] == "venues":
 				symbol = decomp[-1]
 				venue = decomp[-3]
+				
 				create_book_if_needed(venue, symbol)
 				ret = venue_symbol_book_map[(venue, symbol)].get_book()
 				assert(ret)
@@ -142,6 +141,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			if decomp[-1] == "quote" and decomp[-3] == "stocks" and decomp[-5] == "venues":
 				symbol = decomp[-2]
 				venue = decomp[-4]
+				
 				create_book_if_needed(venue, symbol)
 				ret = venue_symbol_book_map[(venue, symbol)].get_quote()
 				assert(ret)
@@ -158,6 +158,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				id = int(decomp[-1])
 				symbol = decomp[-3]
 				venue = decomp[-5]
+				
 				create_book_if_needed(venue, symbol)
 				ret = venue_symbol_book_map[(venue, symbol)].get_status(id)
 				assert(ret)
@@ -199,8 +200,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				venue = decomp[-6]
 				account = decomp[-4]
 				symbol = decomp[-2]
-				create_book_if_needed(venue, symbol)
 				
+				create_book_if_needed(venue, symbol)
 				book = venue_symbol_book_map[(venue, symbol)]
 				ret = book.get_all_orders(account)
 				assert(ret)
@@ -255,7 +256,6 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "cancel" and decomp[-3] == "orders" and decomp[-5] == "stocks" and decomp[-7] == "venues":
-				
 				venue = decomp[-6]
 				symbol = decomp[-4]
 				id = decomp[-2]
