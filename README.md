@@ -17,7 +17,7 @@ A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)**
 
 * No websockets
 * No authentication, anyone can cancel or see any order
-* Everything persists forever; we will eventually run out of memory
+* Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
 **Other important differences:**
 
