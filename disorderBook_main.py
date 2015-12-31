@@ -3,7 +3,7 @@ import disorderBook_book as book
 
 GENERIC_ERROR = '{"ok": false, "error": "Could not determine handler for request"}'
 
-all_venues_and_symbols = dict()			# tuple (venue, symbol) ---> OrderBook object
+venue_symbol_book_map = dict()			# tuple (venue, symbol) ---> OrderBook object
 all_venues = set()
 
 def create_book_if_needed(venue, symbol):
@@ -11,8 +11,8 @@ def create_book_if_needed(venue, symbol):
 	
 	all_venues.add(venue)
 	
-	if pair not in all_venues_and_symbols:
-		all_venues_and_symbols[pair] = book.OrderBook(venue, symbol)
+	if pair not in venue_symbol_book_map:
+		venue_symbol_book_map[pair] = book.OrderBook(venue, symbol)
 
 class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	
@@ -72,7 +72,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			if decomp[-1] == "venues":
 				ret = dict()
 				ret["ok"] = True
-				ret["venues"] = [{"name": v + " Exchange", "venue": v} for v in all_venues]
+				ret["venues"] = [{"name": v + " Exchange", "venue": v, "state" : "open"} for v in all_venues]
 				self.send_whatever(ret)
 				return
 		except Exception as e:
@@ -101,7 +101,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 
 			if request_venue:
 				symbol_list = []
-				for (venue, symbol) in all_venues_and_symbols:	# Getting this tuple from the keys
+				for (venue, symbol) in venue_symbol_book_map:	# Getting this tuple from the keys
 					if venue == request_venue:
 						symbol_list.append(symbol)
 				if symbol_list:
@@ -128,7 +128,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				symbol = decomp[-1]
 				venue = decomp[-3]
 				create_book_if_needed(venue, symbol)
-				ret = all_venues_and_symbols[(venue, symbol)].get_book()
+				ret = venue_symbol_book_map[(venue, symbol)].get_book()
 				assert(ret)
 				self.send_whatever(ret)
 				return
@@ -143,7 +143,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				symbol = decomp[-2]
 				venue = decomp[-4]
 				create_book_if_needed(venue, symbol)
-				ret = all_venues_and_symbols[(venue, symbol)].get_quote()
+				ret = venue_symbol_book_map[(venue, symbol)].get_quote()
 				assert(ret)
 				self.send_whatever(ret)
 				return
@@ -159,7 +159,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				symbol = decomp[-3]
 				venue = decomp[-5]
 				create_book_if_needed(venue, symbol)
-				ret = all_venues_and_symbols[(venue, symbol)].get_status(id)
+				ret = venue_symbol_book_map[(venue, symbol)].get_status(id)
 				assert(ret)
 				self.send_whatever(ret)
 				return
@@ -176,9 +176,9 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				
 				orders = []
 				
-				for (venue, symbol) in all_venues_and_symbols:	# Getting this tuple from the keys
+				for (venue, symbol) in venue_symbol_book_map:	# Getting this tuple from the keys
 					if venue == request_venue:
-						book = all_venues_and_symbols[(venue, symbol)]
+						book = venue_symbol_book_map[(venue, symbol)]
 						orders += book.get_all_orders(account)["orders"]
 				
 				ret = dict()
@@ -201,7 +201,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				symbol = decomp[-2]
 				create_book_if_needed(venue, symbol)
 				
-				book = all_venues_and_symbols[(venue, symbol)]
+				book = venue_symbol_book_map[(venue, symbol)]
 				ret = book.get_all_orders(account)
 				assert(ret)
 				self.send_whatever(ret)
@@ -243,7 +243,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			
 				create_book_if_needed(venue, symbol)
 			
-				ret = all_venues_and_symbols[(venue, symbol)].parse_order(data)
+				ret = venue_symbol_book_map[(venue, symbol)].parse_order(data)
 				assert(ret)
 				self.send_whatever(ret)
 				return
@@ -261,7 +261,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				id = decomp[-2]
 				
 				create_book_if_needed(venue, symbol)
-				ret = all_venues_and_symbols[(venue, symbol)].cancel_order(id)
+				ret = venue_symbol_book_map[(venue, symbol)].cancel_order(id)
 				assert(ret)
 				self.send_whatever(ret)
 				return
@@ -290,7 +290,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 				id = decomp[-1]
 				
 				create_book_if_needed(venue, symbol)
-				ret = all_venues_and_symbols[(venue, symbol)].cancel_order(id)
+				ret = venue_symbol_book_map[(venue, symbol)].cancel_order(id)
 				assert(ret)
 				self.send_whatever(ret)
 				return
