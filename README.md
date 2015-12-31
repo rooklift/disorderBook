@@ -9,7 +9,7 @@ A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)**
 
 **Features:**
 
-* Your bots can use whatever accounts, venues, and symbols they like
+* Your bots can use whatever accounts, venues, and symbols they like (except that words like "venues" and "order" and so on that appear in the URL are likely to confuse the parser if you also use them as names).
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
 
