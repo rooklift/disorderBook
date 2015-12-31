@@ -99,7 +99,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 			else:
 				request_venue = None
 
-			if request_venue:
+			if request_venue is not None:
 				symbol_list = []
 				for (venue, symbol) in venue_symbol_book_map:	# Getting this tuple from the keys
 					if venue == request_venue:
