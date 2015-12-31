@@ -16,10 +16,22 @@ def create_book_if_needed(venue, symbol):
 
 class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 	
+	# Most of the heavy lifting is done by the parent class, for more info see:
+	# https://hg.python.org/cpython/file/3.4/Lib/http/server.py
+	#
+	# We only need to implement do_GET, do_POST, and do_DELETE and it will call those functions
+	# as needed. But I also reimplement log_request just to disable printing to screen...
+	
+	def log_request(self, *args, **kwargs):
+		pass
+	
+	# Nothing else in this new class is a reimplementation. Avoid naming something "send_error",
+	# "send_header", "send_response", "handle", "parse_request", as these do exist in the parent.
+	
 	def send_whatever(self, s, code = 200):		# Accepts strings or dicts (converts to JSON in that case)
 		if isinstance(s, dict):
 			s = json.dumps(s)
-		self.send_response(code)
+		self.send_response(code)				# Sends http first line e.g. "HTTP/1.1 200 OK", plus Server and Date lines
 		self.send_header("Content-Type", "application/json")
 		self.end_headers()
 		self.wfile.write(s.encode(encoding="ascii"))
