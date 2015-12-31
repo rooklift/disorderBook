@@ -1,8 +1,7 @@
 # The strategy of this stupid bot is:
 #
-# If current price is below recent average, try to buy at even lower price
-# If current price is above recent average, try to sell at even higher price
-# But try to not go too far outside the position range -500 to 500
+# If we have positive shares, try to sell above current price
+# If we have negative shares, try to buy below current price
 
 import json, random, time
 import stockfighter_minimal as sf
@@ -22,28 +21,18 @@ def main():
 	orderType = "limit"
 
 	last_id = None
-	recent_prices = []
+	last_price = None
 	
 	active_ids = []
 	
 	myshares, mycents = 0, 0
 	
-	print("Waiting to see some prices before starting...\n")
-	
 	while 1:
 		try:
 			last_price = sf.quote(venue, symbol)["last"]
-			recent_prices.append(last_price)
 		except:
 			time.sleep(5)
-		
-		if len(recent_prices) > 20:
-			recent_prices = recent_prices[-20:]
-		else:
-			time.sleep(1)
 			continue
-		
-		# So the following only happens when enough prices have been seen...
 		
 		if len(active_ids) > 10:
 			r = sf.cancel(venue, symbol, active_ids[0], verbose = True)
@@ -54,22 +43,16 @@ def main():
 			print("\nShares: {}, Cents: {}, NAV: {} (current price: {})\n".format(myshares, mycents, myshares * last_price + mycents, last_price))
 			active_ids.pop(0)
 		
-		average = sum(recent_prices) // len(recent_prices)
+		qty = 100
+		qty += random.randint(-25, 0)
 		
-		qty = 200
-		qty += random.randint(-50, 50)
-		
-		if last_price < average:
-			if myshares < 500:
-				direction = "buy"
-			else:
-				direction = "sell"
+		if myshares < 0:
+			direction = "buy"
+		elif myshares > 0:
+			direction = "sell"
 		else:
-			if myshares > -500:
-				direction = "sell"
-			else:
-				direction = "buy"
-
+			direction = random.choice(["buy", "sell"])
+		
 		if direction == "buy":
 			price = last_price - 50
 		else:
