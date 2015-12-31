@@ -1,3 +1,9 @@
+# The strategy of this stupid bot is:
+#
+# If current price is below recent average, try to buy at even lower price
+# If current price is above recent average, try to sell at even higher price
+# But try to not go too far outside the position range -500 to 500
+
 import json, random, time
 import stockfighter_minimal as sf
 
@@ -16,8 +22,9 @@ def main():
 	orderType = "limit"
 
 	last_id = None
-	last_time = time.clock()
 	recent_prices = []
+	
+	active_ids = []
 	
 	myshares, mycents = 0, 0
 	
@@ -36,20 +43,16 @@ def main():
 			time.sleep(1)
 			continue
 		
-		if time.clock() - last_time < 5:
-			time.sleep(1)
-			continue
+		# So the following only happens when enough prices have been seen...
 		
-		# At this point we know we have 20 recent prices stored,
-		# and our last order was placed 5 seconds ago.
-		
-		if last_id:
-			r = sf.cancel(venue, symbol, last_id, verbose = True)
-			deltas = sf.parse_fills_from_response(r)
-			myshares += deltas["shares"]
-			mycents += deltas["cents"]
+		if len(active_ids) > 10:
+			r = sf.cancel(venue, symbol, active_ids[0], verbose = True)
+			if r:
+				deltas = sf.parse_fills_from_response(r)
+				myshares += deltas["shares"]
+				mycents += deltas["cents"]
 			print("\nShares: {}, Cents: {}, NAV: {} (current price: {})\n".format(myshares, mycents, myshares * last_price + mycents, last_price))
-			last_id = None
+			active_ids.pop(0)
 		
 		average = sum(recent_prices) // len(recent_prices)
 		
@@ -57,10 +60,19 @@ def main():
 		qty += random.randint(-50, 50)
 		
 		if last_price < average:
-			direction = "buy"
+			if myshares < 500:
+				direction = "buy"
+			else:
+				direction = "sell"
+		else:
+			if myshares > -500:
+				direction = "sell"
+			else:
+				direction = "buy"
+
+		if direction == "buy":
 			price = last_price - 50
 		else:
-			direction = "sell"
 			price = last_price + 50
 		
 		print("Placing order...")
@@ -76,12 +88,12 @@ def main():
 				},
 				verbose = False)
 		
-		last_time = time.clock()
-		
 		try:
-			last_id = r["id"]
+			active_ids.append(r["id"])
 		except:
 			print("Trouble getting ID.")
+		
+		time.sleep(0.5)
 		
 
 
