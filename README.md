@@ -31,4 +31,4 @@ A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)**
 
 * There are 2 parts, the orderbook, and the request handler
 * The orderbook, if I say so myself, is relatively sane in its design
-* The request handler is stupidly done, but easy to read
+* The request handler is stupidly done, but fairly simple
