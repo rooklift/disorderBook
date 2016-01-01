@@ -1,5 +1,6 @@
 # disorderBook
-An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3
+An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3<br>
+Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 **Usage:**
 
