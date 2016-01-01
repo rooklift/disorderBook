@@ -9,11 +9,11 @@ all_venues = dict()		# dict: venue string ---> dict: stock string ---> OrderBook
 
 def create_book_if_needed(venue, symbol):
 
-		if venue not in all_venues:
-			all_venues[venue] = dict()
+	if venue not in all_venues:
+		all_venues[venue] = dict()
 		
-		if symbol not in all_venues[venue]:
-			all_venues[venue][symbol] = book.OrderBook(venue, symbol)
+	if symbol not in all_venues[venue]:
+		all_venues[venue][symbol] = book.OrderBook(venue, symbol)
 
 
 class StockFighterHandler(http.server.BaseHTTPRequestHandler):
