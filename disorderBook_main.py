@@ -2,7 +2,7 @@ import http.server, json
 import disorderBook_book as book
 
 
-GENERIC_ERROR = '{"ok": false, "error": "Could not determine handler for request"}'
+GENERIC_ERROR = {"ok": False, "error": "Could not determine handler for request"}
 
 all_venues = dict()		# dict: venue string ---> dict: stock string ---> OrderBook objects
 
@@ -42,8 +42,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		self.send_whatever(s, 400)
 	
 	def send_exception(self, e):
-		msg = '{{"ok": false, "error": "{}"}}'.format(e)
-		self.send_whatever(msg, 400)
+		di = {"ok": False, "error": str(e)}
+		self.send_whatever(di, 400)
 	
 	def do_GET(self):
 		path = self.path
@@ -62,7 +62,7 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "heartbeat" and "venues" not in path:
-				self.send_whatever('{"ok": true, "error": ""}')
+				self.send_whatever({"ok": True, "error": ""})
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -85,7 +85,11 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 		
 		try:
 			if decomp[-1] == "heartbeat" and decomp[-3] == "venues":
-				self.send_whatever('{{"ok": true, "venue": "{}"}}'.format(decomp[-2]))
+				venue = decomp[-2]
+				if venue in all_venues:
+					self.send_whatever({"ok": True, "venue": venue})
+				else:
+					self.send_whatever({"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)})
 				return
 		except Exception as e:
 			self.send_exception(e)
@@ -109,9 +113,8 @@ class StockFighterHandler(http.server.BaseHTTPRequestHandler):
 						}
 				else:
 					ret = {
-							"ok" : True,
-							"symbols" : [],
-							"info" : "Use any venue and symbol to create an exchange"
+							"ok" : False,
+							"error": "Venue {} does not exist (create it by using it)".format(venue)
 						}
 				self.send_whatever(ret)
 				return
