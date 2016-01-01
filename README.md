@@ -1,5 +1,5 @@
 # disorderBook
-A probably-too-slow implementation of **[Stockfighter](http://stockfighter.io)** in Python 3
+An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3
 
 **Usage:**
 
