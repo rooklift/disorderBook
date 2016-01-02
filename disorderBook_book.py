@@ -105,7 +105,7 @@ class OrderBook ():
 		
 	def account_from_order_id(self, id):
 		try:
-			return id_lookup_table[id]["account"]
+			return self.id_lookup_table[id]["account"]
 		except KeyError:
 			return None
 
