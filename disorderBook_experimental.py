@@ -177,9 +177,7 @@ def make_order(venue, symbol):
         return ret
 
 
-
-
-@route("/ob/api/venues/:venue/stocks/:stock/orders/:id/cancel", "POST")        # Alternate cancel method, for people without DELETE
+@route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")        # Alternate cancel method, for people without DELETE
 def cancel_via_post(venue, symbol, id):
     
     create_book_if_needed(venue, symbol)
