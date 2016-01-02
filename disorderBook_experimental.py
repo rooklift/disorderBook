@@ -197,3 +197,5 @@ def home():
     Ask questions on slack, Amtiskaw "promised" to answer everything.
     </pre>
     """
+
+run(host="127.0.0.1", port=8000)
