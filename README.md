@@ -2,9 +2,11 @@
 An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3<br>
 Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
+With the help of Medecau, a version of this now uses bottle library for request handling.
+
 **Usage:**
 
-* Run *disorderBook_main.py* &nbsp; (also requires *disorderBook_book.py* to be present)
+* Run either *disorderBook_simple.py* or *disorderBook_bottle.py*
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
