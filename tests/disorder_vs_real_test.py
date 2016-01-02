@@ -4,10 +4,12 @@
 
 import copy, inspect, json, requests, time, random
 
+
 _API_URL = "http://127.0.0.1:8000/ob/api/"		# or "https://api.stockfighter.io/ob/api/"
 _API_KEY = "unused"
 
 _extra_headers = {"X-Starfighter-Authorization" : _API_KEY}
+
 
 TEST_SIZE = 200
 SEED = 155176

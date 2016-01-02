@@ -250,18 +250,32 @@ def main():
 	
 	opt_parser = optparse.OptionParser()
 	
-	opt_parser.add_option("-b", "--maxbooks", dest="maxbooks", type="int", help="Maximum number of books (exchange/ticker combos) [default: %default]")
+	opt_parser.add_option(
+		"-b", "--maxbooks",
+		dest = "maxbooks",
+		type = "int",
+		help = "Maximum number of books (exchange/ticker combos) [default: %default]")
 	opt_parser.set_defaults(maxbooks = 10)
-	opt_parser.add_option("-v", "--venue", dest="default_venue", type="str", help="Default venue; always exists [default: %default]")
+	
+	opt_parser.add_option(
+		"-v", "--venue",
+		dest = "default_venue",
+		type = "str",
+		help = "Default venue; always exists [default: %default]")
 	opt_parser.set_defaults(default_venue = "TESTEX")
-	opt_parser.add_option("-s", "--symbol", dest="default_symbol", type="str", help="Default symbol; always exists on default venue [default: %default]")
+
+	opt_parser.add_option(
+		"-s", "--symbol", "--stock",
+		dest = "default_symbol",
+		type = "str",
+		help = "Default symbol; always exists on default venue [default: %default]")
 	opt_parser.set_defaults(default_symbol = "FOOBAR")
 	
 	opts, args = opt_parser.parse_args()
 	
 	create_book_if_needed(opts.default_venue, opts.default_symbol)
 	
-	run(host="127.0.0.1", port=8000)
+	run(host="127.0.0.1", port = 8000)
 	
 
 if __name__ == "__main__":
