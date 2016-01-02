@@ -14,12 +14,17 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
+**Authentication:**
+
+* There is no authentication by default
+* If you want authentication, run  *disorderBook_bottle.py -a accounts.json*
+* (Edit that file to contain a list of valid users and API keys)
+
 **Features:**
 
 * Your bots can use whatever accounts, venues, and symbols they like
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
-* If you want authentication, do  *disorderBook_bottle.py -a accounts.json* (edit that file first)
 
 **Issues:**
 
