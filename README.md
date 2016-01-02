@@ -22,8 +22,8 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 **Issues:**
 
-* No websockets yet, or maybe ever
 * No authentication **yet**
+* No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
 **Other important differences:**
