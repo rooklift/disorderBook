@@ -1,12 +1,18 @@
 # This is a better version of the frontend using the bottle library
 # Made by Medecau and Fohristiwhirl
 
+import json, optparse
 from bottle import route, request, run
 import disorderBook_book as book
-import json
-
 
 all_venues = dict()        # dict: venue string ---> dict: stock string ---> OrderBook objects
+current_book_count = 0
+
+# ----------------------------------------------------------------------------------------
+
+
+class TooManyBooks (Exception):
+	pass
 
 
 def response_from_exception(e):
@@ -17,13 +23,22 @@ def response_from_exception(e):
 
 
 def create_book_if_needed(venue, symbol):
-    if venue not in all_venues:
-        all_venues[venue] = dict()
+	global current_book_count
+	
+	if venue not in all_venues:
+		if opts.maxbooks > 0:
+			if current_book_count + 1 > opts.maxbooks:
+				raise TooManyBooks
+		all_venues[venue] = dict()
 
-    if symbol not in all_venues[venue]:
-        all_venues[venue][symbol] = book.OrderBook(venue, symbol)
+	if symbol not in all_venues[venue]:
+		if opts.maxbooks > 0:
+			if current_book_count + 1 > opts.maxbooks:
+				raise TooManyBooks
+		all_venues[venue][symbol] = book.OrderBook(venue, symbol)
+		current_book_count += 1
 
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 
 @route("/ob/api/heartbeat", "GET")
 def heartbeat():
@@ -65,43 +80,52 @@ route("/ob/api/venues/<venue>", "GET", stocklist)				# Alternate URL
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
 def orderbook(venue, symbol):
 
-    create_book_if_needed(venue, symbol)
+	try:
+		create_book_if_needed(venue, symbol)
+	except TooManyBooks:
+		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
 
-    try:
-        ret = all_venues[venue][symbol].get_book()
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+	try:
+		ret = all_venues[venue][symbol].get_book()
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/quote", "GET")
 def quote(venue, symbol):
+	
+	try:
+		create_book_if_needed(venue, symbol)
+	except TooManyBooks:
+		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
 
-    create_book_if_needed(venue, symbol)
-
-    try:
-        ret = all_venues[venue][symbol].get_quote()
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+	try:
+		ret = all_venues[venue][symbol].get_quote()
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
 def status(venue, symbol, id):
 
-    create_book_if_needed(venue, symbol)
+	try:
+		create_book_if_needed(venue, symbol)
+	except TooManyBooks:
+		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
 
-    try:
-        ret = all_venues[venue][symbol].get_status(id)
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+	try:
+		ret = all_venues[venue][symbol].get_status(id)
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
@@ -123,73 +147,87 @@ def status_all_orders(venue, account):
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
 def status_all_orders_one_stock(venue, account, symbol):
 
-    create_book_if_needed(venue, symbol)
+	try:
+		create_book_if_needed(venue, symbol)
+	except TooManyBooks:
+		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
 
-    try:
-        ret = all_venues[venue][symbol].get_all_orders(account)
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+	try:
+		ret = all_venues[venue][symbol].get_all_orders(account)
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "DELETE")
 def cancel(venue, symbol, id):
 
-    create_book_if_needed(venue, symbol)
+	try:
+		create_book_if_needed(venue, symbol)
+	except TooManyBooks:
+		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
 
-    try:
-        ret = all_venues[venue][symbol].cancel_order(id)
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+	try:
+		ret = all_venues[venue][symbol].cancel_order(id)
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
 def make_order(venue, symbol):
 
-    try:
-        data = str(request.body.read(), encoding="utf-8")
-        data = json.loads(data)
-    except:
-        return {"ok": False, "error": "Incoming data was not valid JSON"}
+	try:
+		data = str(request.body.read(), encoding="utf-8")
+		data = json.loads(data)
+	except:
+		return {"ok": False, "error": "Incoming data was not valid JSON"}
 
-    try:
+	try:
         # Thanks to cite-reader for this:
         # Match behavior of real Stockfighter: recognize both these forms
 
-        symbol = None
-        if "stock" in data:
-            symbol = data["stock"]
-        elif "symbol" in data:
-            symbol = data["symbol"]
-        assert(symbol is not None)
+		symbol = None
+		if "stock" in data:
+			symbol = data["stock"]
+		elif "symbol" in data:
+			symbol = data["symbol"]
+		assert(symbol is not None)
 
-        venue = data["venue"]
+		venue = data["venue"]
 
-        create_book_if_needed(venue, symbol)
+		try:
+			create_book_if_needed(venue, symbol)
+		except TooManyBooks:
+			return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
 
-        ret = all_venues[venue][symbol].parse_order(data)
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+		ret = all_venues[venue][symbol].parse_order(data)
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")        # Alternate cancel method, for people without DELETE
 def cancel_via_post(venue, symbol, id):
-    create_book_if_needed(venue, symbol)
-    try:
-        ret = all_venues[venue][symbol].cancel_order(id)
-        assert(ret)
-        return ret
-    except Exception as e:
-        ret = response_from_exception(e)
-        return ret
+    
+	try:
+		create_book_if_needed(venue, symbol)
+	except TooManyBooks:
+		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+	
+	try:
+		ret = all_venues[venue][symbol].cancel_order(id)
+		assert(ret)
+		return ret
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
 
 
 @route("/")
@@ -203,5 +241,26 @@ def home():
     </pre>
     """
 
-if __name__ == "__main__":
+# ----------------------------------------------------------------------------------------
+
+def main():
+	global opts; global args
+	
+	opt_parser = optparse.OptionParser()
+	
+	opt_parser.add_option("-b", "--maxbooks", dest="maxbooks", type="int", help="Maximum number of books (exchange/ticker combos) [default: %default]")
+	opt_parser.set_defaults(maxbooks = 1)
+	opt_parser.add_option("-v", "--venue", dest="default_venue", type="str", help="Default venue name (always exists)")
+	opt_parser.set_defaults(default_venue = "TESTEX")
+	opt_parser.add_option("-s", "--symbol", dest="default_symbol", type="str", help="Default symbol name (always exists on default venue)")
+	opt_parser.set_defaults(default_symbol = "FOOBAR")
+	
+	opts, args = opt_parser.parse_args()
+	
+	create_book_if_needed(opts.default_venue, opts.default_symbol)
+	
 	run(host="127.0.0.1", port=8000)
+	
+
+if __name__ == "__main__":
+	main()
