@@ -4,13 +4,13 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 **Requirements:**
 
-* With the help of Medecau, the main version of this now uses the [Bottle](http://bottlepy.org/) library for request handling.
-* It can likely be installed using "pip install bottle".
-* The old server will remain as *disorderBook_simple.py* but is deprecated.
+* With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling
+* It can likely be installed using "pip install bottle"
+* The old server will remain as *disorderBook_simple.py* but is deprecated
 
 **disorderBook Usage:**
 
-* Run either *disorderBook_simple.py* or *disorderBook_bottle.py*
+* Run either *disorderBook_bottle.py* or *disorderBook_simple.py*
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
