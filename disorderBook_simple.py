@@ -1,3 +1,7 @@
+# This is the old version of the frontend and is now deprecated.
+# It lacks authentication.
+
+
 import http.server, json
 import disorderBook_book as book
 

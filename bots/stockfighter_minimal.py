@@ -6,7 +6,7 @@ import json, requests
 
 _API_URL = "http://127.0.0.1:8000/ob/api/"
 
-_api_key = "unused"
+_api_key = "exb123456"
 _api_cookie_text = "api_key={}".format(_api_key)
 _extra_headers = {"X-Starfighter-Authorization" : _api_key, "Cookie" : _api_cookie_text}
 

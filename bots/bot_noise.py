@@ -11,7 +11,7 @@ def main():
 	except:
 		venue, symbol = "BUYEX", "DOGS"
 
-	account = "NZ" + str(random.randint(0,999999999))
+	account = "EXB123456"			# "NZ" + str(random.randint(0,999999999))
 
 	orderType = "limit"
 
