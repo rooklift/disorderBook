@@ -19,10 +19,10 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 * Your bots can use whatever accounts, venues, and symbols they like
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
+* If you want authentication, do  *disorderBook_bottle.py -a accounts.json* (edit that file first)
 
 **Issues:**
 
-* No authentication **yet**
 * No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
