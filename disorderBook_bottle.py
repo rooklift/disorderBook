@@ -5,7 +5,7 @@ import json, optparse
 from bottle import route, request, run
 import disorderBook_book as book
 
-all_venues = dict()        # dict: venue string ---> dict: stock string ---> OrderBook objects
+all_venues = dict()			# dict: venue string ---> dict: stock string ---> OrderBook objects
 current_book_count = 0
 
 # ----------------------------------------------------------------------------------------
@@ -16,10 +16,10 @@ class TooManyBooks (Exception):
 
 
 def response_from_exception(e):
-    di = dict()
-    di["ok"] = False
-    di["error"] = str(e)
-    return di
+	di = dict()
+	di["ok"] = False
+	di["error"] = str(e)
+	return di
 
 
 def create_book_if_needed(venue, symbol):
@@ -42,38 +42,38 @@ def create_book_if_needed(venue, symbol):
 
 @route("/ob/api/heartbeat", "GET")
 def heartbeat():
-    return {"ok": True, "error": ""}
+	return {"ok": True, "error": ""}
 
 
 @route("/ob/api/venues", "GET")
 def venue_list():
-    ret = dict()
-    ret["ok"] = True
-    ret["venues"] = [{"name": v + " Exchange", "venue": v, "state" : "open"} for v in all_venues]
-    return ret
+	ret = dict()
+	ret["ok"] = True
+	ret["venues"] = [{"name": v + " Exchange", "venue": v, "state" : "open"} for v in all_venues]
+	return ret
 
 
 @route("/ob/api/venues/<venue>/heartbeat", "GET")
 def venue_heartbeat(venue):
-    if venue in all_venues:
-        return {"ok": True, "venue": venue}
-    else:
-        return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
+	if venue in all_venues:
+		return {"ok": True, "venue": venue}
+	else:
+		return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
 
 @route("/ob/api/venues/<venue>/stocks", "GET")
 def stocklist(venue):
-    if venue in all_venues:
-        ret = {
-                "ok" : True,
-                "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]
-            }
-    else:
-        ret = {
-                "ok" : False,
-                "error": "Venue {} does not exist (create it by using it)".format(venue)
-            }
-    return ret
+	if venue in all_venues:
+		ret = {
+				"ok" : True,
+				"symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]
+			}
+	else:
+		ret = {
+				"ok" : False,
+				"error": "Venue {} does not exist (create it by using it)".format(venue)
+			}
+	return ret
 route("/ob/api/venues/<venue>", "GET", stocklist)				# Alternate URL
 
 
@@ -131,17 +131,17 @@ def status(venue, symbol, id):
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
 def status_all_orders(venue, account):
 
-    orders = []
+	orders = []
 
-    if venue in all_venues:
-        for bk in all_venues[venue].values():
-            orders += bk.get_all_orders(account)["orders"]
+	if venue in all_venues:
+		for bk in all_venues[venue].values():
+			orders += bk.get_all_orders(account)["orders"]
 
-    ret = dict()
-    ret["ok"] = True
-    ret["venue"] = venue
-    ret["orders"] = orders
-    return ret
+	ret = dict()
+	ret["ok"] = True
+	ret["venue"] = venue
+	ret["orders"] = orders
+	return ret
 
 
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
@@ -188,8 +188,8 @@ def make_order(venue, symbol):
 		return {"ok": False, "error": "Incoming data was not valid JSON"}
 
 	try:
-        # Thanks to cite-reader for this:
-        # Match behavior of real Stockfighter: recognize both these forms
+		# Thanks to cite-reader for this:
+		# Match behavior of real Stockfighter: recognize both these forms
 
 		symbol = None
 		if "stock" in data:
@@ -213,9 +213,9 @@ def make_order(venue, symbol):
 		return ret
 
 
-@route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")        # Alternate cancel method, for people without DELETE
+@route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")		# Alternate cancel method, for people without DELETE
 def cancel_via_post(venue, symbol, id):
-    
+	
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
@@ -232,14 +232,14 @@ def cancel_via_post(venue, symbol, id):
 
 @route("/")
 def home():
-    return """
-    <pre>
+	return """
+	<pre>
 	
-    Unofficial Stockfighter server
+	Unofficial Stockfighter server
 	By Amtiskaw (Fohristiwhirl on GitHub) and Medecau
 	With helpful help from DanielVF
-    </pre>
-    """
+	</pre>
+	"""
 
 # ----------------------------------------------------------------------------------------
 
