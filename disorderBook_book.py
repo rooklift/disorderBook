@@ -102,10 +102,10 @@ class OrderBook ():
 		self.last_trade_price = None
 		self.last_trade_size = None
 
-		
+
 	def account_from_order_id(self, id):
 		try:
-			return self.id_lookup_table[id]["account"]
+			return self.id_lookup_table[int(id)]["account"]
 		except KeyError:
 			return None
 

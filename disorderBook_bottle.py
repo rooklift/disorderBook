@@ -149,7 +149,7 @@ def status(venue, symbol, id):
 			return NO_AUTH_ERROR
 
 	try:
-		ret = all_venues[venue][symbol].get_status(id)
+		ret = all_venues[venue][symbol].get_status(int(id))
 		assert(ret)		# Fails if ID invalid
 		
 		if auth:
@@ -247,7 +247,7 @@ def cancel(venue, symbol, id):
 			except NoApiKey:
 				return NO_AUTH_ERROR
 		
-			account = all_venues[venue][symbol].account_from_order_id(id)
+			account = all_venues[venue][symbol].account_from_order_id(int(id))
 			if not account:
 				return NO_SUCH_ORDER
 				
@@ -257,7 +257,7 @@ def cancel(venue, symbol, id):
 			if auth[account] != apikey:
 				return AUTH_FAILURE
 
-		ret = all_venues[venue][symbol].cancel_order(id)
+		ret = all_venues[venue][symbol].cancel_order(int(id))
 		assert(ret)
 		return ret
 		
@@ -331,7 +331,7 @@ def cancel_via_post(venue, symbol, id):
 			except NoApiKey:
 				return NO_AUTH_ERROR
 		
-			account = all_venues[venue][symbol].account_from_order_id(id)
+			account = all_venues[venue][symbol].account_from_order_id(int(id))
 			if not account:
 				return NO_SUCH_ORDER
 				
@@ -341,7 +341,7 @@ def cancel_via_post(venue, symbol, id):
 			if auth[account] != apikey:
 				return AUTH_FAILURE
 	
-		ret = all_venues[venue][symbol].cancel_order(id)
+		ret = all_venues[venue][symbol].cancel_order(int(id))
 		assert(ret)
 		return ret
 	
