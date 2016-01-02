@@ -8,6 +8,8 @@ import disorderBook_book as book
 all_venues = dict()			# dict: venue string ---> dict: stock string ---> OrderBook objects
 current_book_count = 0
 
+BOOK_ERROR = {"ok": False, "error": "Book limit exceeded! (See command line options)"}
+
 # ----------------------------------------------------------------------------------------
 
 
@@ -83,7 +85,7 @@ def orderbook(venue, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+		return 
 
 	try:
 		ret = all_venues[venue][symbol].get_book()
@@ -100,7 +102,7 @@ def quote(venue, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+		return BOOK_ERROR
 
 	try:
 		ret = all_venues[venue][symbol].get_quote()
@@ -117,7 +119,7 @@ def status(venue, symbol, id):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+		return BOOK_ERROR
 
 	try:
 		ret = all_venues[venue][symbol].get_status(id)
@@ -150,7 +152,7 @@ def status_all_orders_one_stock(venue, account, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+		return BOOK_ERROR
 
 	try:
 		ret = all_venues[venue][symbol].get_all_orders(account)
@@ -167,7 +169,7 @@ def cancel(venue, symbol, id):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+		return BOOK_ERROR
 
 	try:
 		ret = all_venues[venue][symbol].cancel_order(id)
@@ -203,7 +205,7 @@ def make_order(venue, symbol):
 		try:
 			create_book_if_needed(venue, symbol)
 		except TooManyBooks:
-			return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+			return BOOK_ERROR
 
 		ret = all_venues[venue][symbol].parse_order(data)
 		assert(ret)
@@ -219,7 +221,7 @@ def cancel_via_post(venue, symbol, id):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return {"ok": False, "error": "Book limit exceeded, cannot create a new one!"}
+		return BOOK_ERROR
 	
 	try:
 		ret = all_venues[venue][symbol].cancel_order(id)
@@ -249,10 +251,10 @@ def main():
 	opt_parser = optparse.OptionParser()
 	
 	opt_parser.add_option("-b", "--maxbooks", dest="maxbooks", type="int", help="Maximum number of books (exchange/ticker combos) [default: %default]")
-	opt_parser.set_defaults(maxbooks = 1)
-	opt_parser.add_option("-v", "--venue", dest="default_venue", type="str", help="Default venue name (always exists)")
+	opt_parser.set_defaults(maxbooks = 10)
+	opt_parser.add_option("-v", "--venue", dest="default_venue", type="str", help="Default venue; always exists [default: %default]")
 	opt_parser.set_defaults(default_venue = "TESTEX")
-	opt_parser.add_option("-s", "--symbol", dest="default_symbol", type="str", help="Default symbol name (always exists on default venue)")
+	opt_parser.add_option("-s", "--symbol", dest="default_symbol", type="str", help="Default symbol; always exists on default venue [default: %default]")
 	opt_parser.set_defaults(default_symbol = "FOOBAR")
 	
 	opts, args = opt_parser.parse_args()
