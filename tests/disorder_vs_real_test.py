@@ -5,8 +5,10 @@
 import copy, inspect, json, requests, time, random
 
 
-_API_URL = "http://127.0.0.1:8000/ob/api/"		# or "https://api.stockfighter.io/ob/api/"
-_API_KEY = "unused"
+_API_URL = "http://127.0.0.1:8000/ob/api/"
+# _API_URL = "https://api.stockfighter.io/ob/api/"
+
+_API_KEY = "exb123456"		# Needs a legit key if running on the official server
 
 _extra_headers = {"X-Starfighter-Authorization" : _API_KEY}
 
@@ -24,7 +26,7 @@ class Order():
 	attributes_and_types = {			# These are all the attributes that can ever be set
 		"account" : str,
 		"venue" : str,
-		"symbol" : str,		# FIXME
+		"stock" : str,
 		"price" : int,
 		"qty" : int,
 		"direction" : str,
@@ -32,7 +34,7 @@ class Order():
 	}
 	
 	synonyms = {
-		"stock" : "symbol"	# FIXME
+		"symbol" : "stock"
 	}
 	
 	attributes = attributes_and_types.keys()
