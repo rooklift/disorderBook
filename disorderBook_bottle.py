@@ -12,7 +12,7 @@ auth = dict()
 
 BOOK_ERROR = {"ok": False, "error": "Book limit exceeded! (See command line options)"}
 NO_AUTH_ERROR = {"ok": False, "error": "Server is in +authentication mode but no API key was received"}
-AUTH_FAILURE = {"ok": False, "error": "API key provided did not match that of the relevant account"}
+AUTH_FAILURE = {"ok": False, "error": "Unknown account or wrong API key"}
 AUTH_WEIRDFAIL = {"ok": False, "error": "Account of stored data had no associated API key (this is impossible)"}
 NO_SUCH_ORDER = {"ok": False, "error": "No such order for that Exchange + Symbol combo"}
 
@@ -22,7 +22,7 @@ class TooManyBooks (Exception):
 	pass
 
 
-class NoApiKey (Exception:
+class NoApiKey (Exception):
 	pass
 
 
@@ -145,7 +145,7 @@ def status(venue, symbol, id):
 	if auth:
 		try:
 			apikey = api_key_from_headers(request.headers)
-		except:
+		except NoApiKey:
 			return NO_AUTH_ERROR
 
 	try:
@@ -156,8 +156,8 @@ def status(venue, symbol, id):
 			account = ret["account"]
 			if account not in auth:
 				return AUTH_WEIRDFAIL
-			elif auth[account] != apikey
-				return AUTH_FAIL
+			elif auth[account] != apikey:
+				return AUTH_FAILURE
 			else:
 				return ret
 
@@ -169,28 +169,35 @@ def status(venue, symbol, id):
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
 def status_all_orders(venue, account):
 	
-	if auth:
-		try:
-			apikey = api_key_from_headers(request.headers)
-		except:
-			return NO_AUTH_ERROR
-
-		if account not in auth:
-			return AUTH_WEIRDFAIL
-		elif auth[account] != apikey
-			return AUTH_FAIL
+	try:
 	
-	orders = []
+		if auth:
+			try:
+				apikey = api_key_from_headers(request.headers)
+			except NoApiKey:
+				return NO_AUTH_ERROR
 
-	if venue in all_venues:
-		for bk in all_venues[venue].values():
-			orders += bk.get_all_orders(account)["orders"]
+			if account not in auth:
+				return AUTH_WEIRDFAIL
+			elif auth[account] != apikey:
+				return AUTH_FAILURE
+		
+		orders = []
 
-	ret = dict()
-	ret["ok"] = True
-	ret["venue"] = venue
-	ret["orders"] = orders
-	return ret
+		if venue in all_venues:
+			for bk in all_venues[venue].values():
+				orders += bk.get_all_orders(account)["orders"]
+
+		ret = dict()
+		ret["ok"] = True
+		ret["venue"] = venue
+		ret["orders"] = orders
+		return ret
+	
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
+
 
 
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
@@ -201,21 +208,24 @@ def status_all_orders_one_stock(venue, account, symbol):
 	except TooManyBooks:
 		return BOOK_ERROR
 	
-	if auth:
-		try:
-			apikey = api_key_from_headers(request.headers)
-		except:
-			return NO_AUTH_ERROR
-
-		if account not in auth:
-			return AUTH_WEIRDFAIL
-		elif auth[account] != apikey
-			return AUTH_FAIL
-
 	try:
+	
+		if auth:
+			try:
+				apikey = api_key_from_headers(request.headers)
+			except NoApiKey:
+				return NO_AUTH_ERROR
+
+			if account not in auth:
+				return AUTH_WEIRDFAIL
+
+			if auth[account] != apikey:
+				return AUTH_FAILURE
+
 		ret = all_venues[venue][symbol].get_all_orders(account)
 		assert(ret)
 		return ret
+
 	except Exception as e:
 		ret = response_from_exception(e)
 		return ret
@@ -229,23 +239,28 @@ def cancel(venue, symbol, id):
 	except TooManyBooks:
 		return BOOK_ERROR
 	
-	if auth:
-	
-		try:
-			apikey = api_key_from_headers(request.headers)
-		except:
-			return NO_AUTH_ERROR
-	
-		account = all_venues[venue][symbol].account_from_order_id(id)
-		if not account:
-			return NO_SUCH_ORDER
-		
-		
-
 	try:
+	
+		if auth:
+			try:
+				apikey = api_key_from_headers(request.headers)
+			except NoApiKey:
+				return NO_AUTH_ERROR
+		
+			account = all_venues[venue][symbol].account_from_order_id(id)
+			if not account:
+				return NO_SUCH_ORDER
+				
+			if account not in auth:
+				return AUTH_WEIRDFAIL
+
+			if auth[account] != apikey:
+				return AUTH_FAILURE
+
 		ret = all_venues[venue][symbol].cancel_order(id)
 		assert(ret)
 		return ret
+		
 	except Exception as e:
 		ret = response_from_exception(e)
 		return ret
@@ -261,9 +276,9 @@ def make_order(venue, symbol):
 		return {"ok": False, "error": "Incoming data was not valid JSON"}
 
 	try:
-		# Thanks to cite-reader for this:
+	
+		# Thanks to cite-reader for the following:
 		# Match behavior of real Stockfighter: recognize both these forms
-
 		symbol = None
 		if "stock" in data:
 			symbol = data["stock"]
@@ -272,15 +287,29 @@ def make_order(venue, symbol):
 		assert(symbol is not None)
 
 		venue = data["venue"]
+		account = data["account"]
 
 		try:
 			create_book_if_needed(venue, symbol)
 		except TooManyBooks:
 			return BOOK_ERROR
+		
+		if auth:
+			try:
+				apikey = api_key_from_headers(request.headers)
+			except NoApiKey:
+				return NO_AUTH_ERROR
+				
+			if account not in auth:
+				return AUTH_FAILURE
+
+			if auth[account] != apikey:
+				return AUTH_FAILURE
 
 		ret = all_venues[venue][symbol].parse_order(data)
 		assert(ret)
 		return ret
+		
 	except Exception as e:
 		ret = response_from_exception(e)
 		return ret
@@ -295,9 +324,27 @@ def cancel_via_post(venue, symbol, id):
 		return BOOK_ERROR
 	
 	try:
+	
+		if auth:
+			try:
+				apikey = api_key_from_headers(request.headers)
+			except NoApiKey:
+				return NO_AUTH_ERROR
+		
+			account = all_venues[venue][symbol].account_from_order_id(id)
+			if not account:
+				return NO_SUCH_ORDER
+				
+			if account not in auth:
+				return AUTH_WEIRDFAIL
+
+			if auth[account] != apikey:
+				return AUTH_FAILURE
+	
 		ret = all_venues[venue][symbol].cancel_order(id)
 		assert(ret)
 		return ret
+	
 	except Exception as e:
 		ret = response_from_exception(e)
 		return ret
@@ -353,9 +400,9 @@ def main():
 	
 	opt_parser.add_option(
 		"-a", "--accounts",
-		dest = "accounts_file"
-		type = "str"
-		help = "File containing JSON dict of account names mapped to their API keys [default: none]"
+		dest = "accounts_file",
+		type = "str",
+		help = "File containing JSON dict of account names mapped to their API keys [default: none]")
 	opt_parser.set_defaults(accounts_file = "")
 	
 	opts, args = opt_parser.parse_args()
