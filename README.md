@@ -10,14 +10,14 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 **disorderBook Usage:**
 
-* Run either *disorderBook_bottle.py* or *disorderBook_simple.py*
+* Run **disorderBook_bottle.py**
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
 **Authentication:**
 
 * There is no authentication by default
-* If you want authentication, run  *disorderBook_bottle.py -a accounts.json*
+* If you want authentication, run  **disorderBook_bottle.py -a accounts.json**
 * (Edit that file to contain a list of valid users and API keys)
 
 **Features:**
