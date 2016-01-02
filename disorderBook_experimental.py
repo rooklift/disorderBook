@@ -1,3 +1,6 @@
+# This is a better version of the frontend using the bottle library
+# Made by Medecau and Fohristiwhirl
+
 from bottle import route, request, run
 import disorderBook_book as book
 import json
@@ -56,7 +59,7 @@ def stocklist(venue):
                 "error": "Venue {} does not exist (create it by using it)".format(venue)
             }
     return ret
-route("/ob/api/venues/<venue>", "GET", stocklist)
+route("/ob/api/venues/<venue>", "GET", stocklist)				# Alternate URL
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
@@ -191,11 +194,14 @@ def cancel_via_post(venue, symbol, id):
 
 @route("/")
 def home():
-    return"""
+    return """
     <pre>
-    Oh, hay!
-    Ask questions on slack, Amtiskaw "promised" to answer everything.
+	
+    Unofficial Stockfighter server
+	By Amtiskaw (Fohristiwhirl on GitHub) and Medecau
+	With helpful help from DanielVF
     </pre>
     """
 
-run(host="127.0.0.1", port=8000)
+if __name__ == "__main__":
+	run(host="127.0.0.1", port=8000)
