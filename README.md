@@ -31,7 +31,4 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 * No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
-**Other important differences:**
-
-* Currently, order IDs are unique per venue+stock, not per venue (e.g. on venue SELLEX, the stock CATS can have an order with an ID of 42 at the same time as stock DOGS also has an order with ID of 42)
 
