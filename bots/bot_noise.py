@@ -49,7 +49,7 @@ def main():
 		time.sleep(0.5)
 		if len(all_orders) > 10:
 			id = all_orders.pop(0)
-			sf.cancel(venue, symbol, id)
+			sf.cancel(venue, symbol, id, verbose = True)
 
 
 if __name__ == "__main__":
