@@ -412,6 +412,9 @@ def main():
 	if opts.accounts_file:
 		create_auth_records()
 	
+	if not auth:
+		print("\n -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
+	
 	run(host="127.0.0.1", port = 8000)
 	
 

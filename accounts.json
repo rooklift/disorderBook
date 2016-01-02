@@ -1,3 +1,4 @@
 {
-	"LEGITACCOUNT" : "secretkey"
+	"TESTACCOUNT": "testing",
+	"FAKEACCOUNT": "faking"
 }
