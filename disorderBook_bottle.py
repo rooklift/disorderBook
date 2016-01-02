@@ -8,11 +8,21 @@ import disorderBook_book as book
 all_venues = dict()			# dict: venue string ---> dict: stock string ---> OrderBook objects
 current_book_count = 0
 
+auth = dict()
+
 BOOK_ERROR = {"ok": False, "error": "Book limit exceeded! (See command line options)"}
+NO_AUTH_ERROR = {"ok": False, "error": "Server is in +authentication mode but no API key was received"}
+AUTH_FAILURE = {"ok": False, "error": "API key provided did not match that of the relevant account"}
+AUTH_WEIRDFAIL = {"ok": False, "error": "Account of stored data had no associated API key (this is impossible)"}
+NO_SUCH_ORDER = {"ok": False, "error": "No such order for that Exchange + Symbol combo"}
 
 # ----------------------------------------------------------------------------------------
 
 class TooManyBooks (Exception):
+	pass
+
+
+class NoApiKey (Exception:
 	pass
 
 
@@ -39,6 +49,17 @@ def create_book_if_needed(venue, symbol):
 		all_venues[venue][symbol] = book.OrderBook(venue, symbol)
 		current_book_count += 1
 
+
+def api_key_from_headers(headers):
+	try:
+		return headers.get('X-Starfighter-Authorization')
+	except:
+		try:
+			return headers.get('X-Stockfighter-Authorization')
+		except:
+			raise NoApiKey
+
+	
 # ----------------------------------------------------------------------------------------
 
 @route("/ob/api/heartbeat", "GET")
@@ -115,16 +136,31 @@ def quote(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
 def status(venue, symbol, id):
-
+	
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
 		return BOOK_ERROR
+	
+	if auth:
+		try:
+			apikey = api_key_from_headers(request.headers)
+		except:
+			return NO_AUTH_ERROR
 
 	try:
 		ret = all_venues[venue][symbol].get_status(id)
-		assert(ret)
-		return ret
+		assert(ret)		# Fails if ID invalid
+		
+		if auth:
+			account = ret["account"]
+			if account not in auth:
+				return AUTH_WEIRDFAIL
+			elif auth[account] != apikey
+				return AUTH_FAIL
+			else:
+				return ret
+
 	except Exception as e:
 		ret = response_from_exception(e)
 		return ret
@@ -132,7 +168,18 @@ def status(venue, symbol, id):
 
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
 def status_all_orders(venue, account):
+	
+	if auth:
+		try:
+			apikey = api_key_from_headers(request.headers)
+		except:
+			return NO_AUTH_ERROR
 
+		if account not in auth:
+			return AUTH_WEIRDFAIL
+		elif auth[account] != apikey
+			return AUTH_FAIL
+	
 	orders = []
 
 	if venue in all_venues:
@@ -153,6 +200,17 @@ def status_all_orders_one_stock(venue, account, symbol):
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
 		return BOOK_ERROR
+	
+	if auth:
+		try:
+			apikey = api_key_from_headers(request.headers)
+		except:
+			return NO_AUTH_ERROR
+
+		if account not in auth:
+			return AUTH_WEIRDFAIL
+		elif auth[account] != apikey
+			return AUTH_FAIL
 
 	try:
 		ret = all_venues[venue][symbol].get_all_orders(account)
@@ -170,6 +228,19 @@ def cancel(venue, symbol, id):
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
 		return BOOK_ERROR
+	
+	if auth:
+	
+		try:
+			apikey = api_key_from_headers(request.headers)
+		except:
+			return NO_AUTH_ERROR
+	
+		account = all_venues[venue][symbol].account_from_order_id(id)
+		if not account:
+			return NO_SUCH_ORDER
+		
+		
 
 	try:
 		ret = all_venues[venue][symbol].cancel_order(id)
@@ -240,10 +311,19 @@ def home():
 	Unofficial Stockfighter server
 	By Amtiskaw (Fohristiwhirl on GitHub) and Medecau
 	With helpful help from DanielVF
+	
+	Mad props to patio11 for the fundamental design
 	</pre>
 	"""
 
 # ----------------------------------------------------------------------------------------
+
+def create_auth_records():
+	global auth
+	global opts
+	
+	with open(opts.accounts_file) as infile:
+		auth = json.load(infile)
 
 def main():
 	global opts; global args
@@ -271,9 +351,19 @@ def main():
 		help = "Default symbol; always exists on default venue [default: %default]")
 	opt_parser.set_defaults(default_symbol = "FOOBAR")
 	
+	opt_parser.add_option(
+		"-a", "--accounts",
+		dest = "accounts_file"
+		type = "str"
+		help = "File containing JSON dict of account names mapped to their API keys [default: none]"
+	opt_parser.set_defaults(accounts_file = "")
+	
 	opts, args = opt_parser.parse_args()
 	
 	create_book_if_needed(opts.default_venue, opts.default_symbol)
+	
+	if opts.accounts_file:
+		create_auth_records()
 	
 	run(host="127.0.0.1", port = 8000)
 	

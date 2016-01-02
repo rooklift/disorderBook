@@ -102,6 +102,13 @@ class OrderBook ():
 		self.last_trade_price = None
 		self.last_trade_size = None
 
+		
+	def account_from_order_id(self, id):
+		try:
+			return id_lookup_table[id]["account"]
+		except KeyError:
+			return None
+
 
 	def cleanup_closed_orders(self):		# This is cute but is it fast?... If improving this later, remember
 		self.bids = [bid for bid in self.bids if bid["open"]]		# that cancels can call this, meaning that
@@ -117,7 +124,7 @@ class OrderBook ():
 		ret["asks"] = [{"price" : order["price"], "qty": order["qty"], "isBuy": False} for order in self.asks]
 		ret["ts"] = current_timestamp()
 		return ret
-
+	
 	
 	def get_status(self, id):
 		return self.id_lookup_table[int(id)]
