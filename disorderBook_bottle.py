@@ -142,13 +142,13 @@ def status(venue, symbol, id):
 	except TooManyBooks:
 		return BOOK_ERROR
 	
-	if auth:
-		try:
-			apikey = api_key_from_headers(request.headers)
-		except NoApiKey:
-			return NO_AUTH_ERROR
-
 	try:
+		if auth:
+			try:
+				apikey = api_key_from_headers(request.headers)
+			except NoApiKey:
+				return NO_AUTH_ERROR
+	
 		ret = all_venues[venue][symbol].get_status(int(id))
 		assert(ret)		# Fails if ID invalid
 		
