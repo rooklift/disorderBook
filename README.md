@@ -2,7 +2,11 @@
 An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3<br>
 Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
-With the help of Medecau, a version of this now uses the [Bottle](http://bottlepy.org/) library for request handling. It can likely be installed using "pip install bottle".
+**Requirements:**
+
+* With the help of Medecau, the main version of this now uses the [Bottle](http://bottlepy.org/) library for request handling.
+* It can likely be installed using "pip install bottle".
+* The old server will remain as *disorderBook_simple.py* but is deprecated.
 
 **disorderBook Usage:**
 
