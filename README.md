@@ -20,6 +20,7 @@ With the help of Medecau, a version of this now uses the [Bottle](http://bottlep
 
 * No websockets
 * No authentication, anyone can cancel or see any order
+* Might be too slow for serious use e.g. as a PvP server
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
 **Other important differences:**
