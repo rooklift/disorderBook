@@ -147,7 +147,6 @@ def cancel(venue, symbol, id):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
 def make_order(venue, symbol):
-    request.form.get('var')  # http://bottlepy.org/docs/dev/tutorial.html#request-data
     
     try:
         data = str(request.body, encoding="ascii")
