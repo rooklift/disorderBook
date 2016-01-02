@@ -16,7 +16,7 @@ def response_from_exception(e):
 def create_book_if_needed(venue, symbol):
     if venue not in all_venues:
         all_venues[venue] = dict()
-        
+
     if symbol not in all_venues[venue]:
         all_venues[venue][symbol] = book.OrderBook(venue, symbol)
 
@@ -61,7 +61,7 @@ route("/ob/api/venues/<venue>", "GET", stocklist)
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
 def orderbook(venue, symbol):
-    
+
     create_book_if_needed(venue, symbol)
 
     try:
@@ -75,9 +75,9 @@ def orderbook(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/quote", "GET")
 def quote(venue, symbol):
-    
+
     create_book_if_needed(venue, symbol)
-        
+
     try:
         ret = all_venues[venue][symbol].get_quote()
         assert(ret)
@@ -85,13 +85,13 @@ def quote(venue, symbol):
     except Exception as e:
         ret = response_from_exception(e)
         return ret
-    
-    
+
+
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
 def status(venue, symbol, id):
-    
+
     create_book_if_needed(venue, symbol)
-    
+
     try:
         ret = all_venues[venue][symbol].get_status(id)
         assert(ret)
@@ -105,11 +105,11 @@ def status(venue, symbol, id):
 def status_all_orders(venue, account):
 
     orders = []
-                
+
     if venue in all_venues:
         for bk in all_venues[venue].values():
             orders += bk.get_all_orders(account)["orders"]
-    
+
     ret = dict()
     ret["ok"] = True
     ret["venue"] = venue
@@ -121,7 +121,7 @@ def status_all_orders(venue, account):
 def status_all_orders_one_stock(venue, account, symbol):
 
     create_book_if_needed(venue, symbol)
-    
+
     try:
         ret = all_venues[venue][symbol].get_all_orders(account)
         assert(ret)
@@ -133,9 +133,9 @@ def status_all_orders_one_stock(venue, account, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "DELETE")
 def cancel(venue, symbol, id):
-    
+
     create_book_if_needed(venue, symbol)
-    
+
     try:
         ret = all_venues[venue][symbol].cancel_order(id)
         assert(ret)
@@ -143,32 +143,32 @@ def cancel(venue, symbol, id):
     except Exception as e:
         ret = response_from_exception(e)
         return ret
-    
+
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
 def make_order(venue, symbol):
-    
+
     try:
-        data = str(request.body, encoding="ascii")
+        data = str(request.body.read(), encoding="utf-8")
         data = json.loads(data)
     except:
         return {"ok": False, "error": "Incoming data was not valid JSON"}
-    
+
     try:
         # Thanks to cite-reader for this:
         # Match behavior of real Stockfighter: recognize both these forms
-        
+
         symbol = None
         if "stock" in data:
             symbol = data["stock"]
         elif "symbol" in data:
             symbol = data["symbol"]
         assert(symbol is not None)
-        
+
         venue = data["venue"]
-        
+
         create_book_if_needed(venue, symbol)
-        
+
         ret = all_venues[venue][symbol].parse_order(data)
         assert(ret)
         return ret
@@ -179,9 +179,7 @@ def make_order(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")        # Alternate cancel method, for people without DELETE
 def cancel_via_post(venue, symbol, id):
-    
     create_book_if_needed(venue, symbol)
-    
     try:
         ret = all_venues[venue][symbol].cancel_order(id)
         assert(ret)
@@ -191,17 +189,11 @@ def cancel_via_post(venue, symbol, id):
         return ret
 
 
-    
-
-
 @route("/")
 def home():
     return"""
     <pre>
     Oh, hay!
-    
     Ask questions on slack, Amtiskaw "promised" to answer everything.
     </pre>
     """
-
-run(host="0.0.0.0", port=8000)

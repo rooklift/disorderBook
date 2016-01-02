@@ -121,11 +121,11 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
 			raw = requests.get(url, headers = _extra_headers)
 	except TimeoutError:
 		with PRINT_LOCK:
-			print("get_json_from_url() called from {} - TimeoutError.".format(caller))
+			print("get_json_from_url() called from {}() - TimeoutError".format(caller))
 			return None
 	except requests.exceptions.ConnectionError:
 		with PRINT_LOCK:
-			print("get_json_from_url() called from {} - requests.exceptions.ConnectionError.".format(caller))
+			print("get_json_from_url() called from {}() - requests.exceptions.ConnectionError".format(caller))
 			return None
 	
 	# We got some sort of reply...
