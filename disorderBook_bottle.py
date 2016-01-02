@@ -12,7 +12,6 @@ BOOK_ERROR = {"ok": False, "error": "Book limit exceeded! (See command line opti
 
 # ----------------------------------------------------------------------------------------
 
-
 class TooManyBooks (Exception):
 	pass
 
@@ -76,6 +75,7 @@ def stocklist(venue):
 				"error": "Venue {} does not exist (create it by using it)".format(venue)
 			}
 	return ret
+
 route("/ob/api/venues/<venue>", "GET", stocklist)				# Alternate URL
 
 
