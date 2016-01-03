@@ -1,36 +1,45 @@
 # disorderBook
-An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3<br>
+An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3
 Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
-**Requirements:**
+## Requirements
 
-* With the help of medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling
-* It can likely be installed using "pip install bottle"
-* The old server will remain as *disorderBook_simple.py* but is deprecated
+With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; install it through `pip install -r requirements.txt`. The old server will remain as `disorderBook_simple.py`, but is deprecated.
 
-**disorderBook Usage:**
+We strongly suggest [setting up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
 
-* Run **disorderBook_bottle.py**
+## Usage
+
+* Run `python3 disorderBook_bottle.py` 
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
-**Authentication:**
+## Authentication
 
-* There is no authentication by default
-* If you want authentication, run  **disorderBook_bottle.py -a accounts.json**
-* (Edit that file to contain a list of valid users and API keys)
+There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_bottle.py -a accounts.json`.
 
-**Features:**
+## Features
 
 * Your bots can use whatever accounts, venues, and symbols they like
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
 
-**Issues:**
+## Missing Features
 
 * No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
-**Thanks:**
+## Non-features
 
-* patio11, cite-reader, Medecau, DanielVF, eu90h
+* DisorderBook does not serve traffic directly, except to clients on the same host.
+* DisorderBook does not speak TLS.
+
+If you want either of these features, put it behind a reverse proxy like NGINX.
+
+## Thanks
+
+* patio11
+* cite-reader
+* Medecau
+* DanielVF
+* eu90h
