@@ -21,7 +21,7 @@ AUTH_WEIRDFAIL = {"ok": False, "error": "Account of stored data had no associate
 NO_SUCH_ORDER = {"ok": False, "error": "No such order for that Exchange + Symbol combo"}
 MISSING_FIELD = {"ok": False, "error": "Incoming POST was missing required field"}
 URL_MISMATCH = {"ok": False, "error": "Incoming POST data disagreed with request URL"}
-BAD_TYPE = {"ok": False, "error": "Correct keys were present in POST but a value had the wrong type"}
+BAD_TYPE = {"ok": False, "error": "A value in the POST had the wrong type"}
 BAD_VALUE = {"ok": False, "error": "Illegal value (usually a non-positive number)"}
 
 # ----------------------------------------------------------------------------------------
