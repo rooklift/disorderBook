@@ -10,13 +10,13 @@ You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/d
 
 ## Usage
 
-* Run `python3 disorderBook_bottle.py` &nbsp; (also requires `disorderBook_book.py` to be present)
+* Run `python3 disorderBook_main.py` &nbsp; (also requires `disorderBook_book.py` to be present)
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
 ## Authentication
 
-There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_bottle.py -a accounts.json`.
+There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_main.py -a accounts.json`.
 
 ## Features
 
