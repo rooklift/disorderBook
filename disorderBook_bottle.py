@@ -322,10 +322,11 @@ def home():
 	<pre>
 	
 	Unofficial Stockfighter server
-	By Amtiskaw (Fohristiwhirl on GitHub) and medecau
+	By Amtiskaw (Fohristiwhirl on GitHub) and Medecau
 	With helpful help from cite-reader and DanielVF
 	
-	Mad props to patio11 for the fundamental design
+	Mad props to patio11 for the fundamental, elegant design!
+	Also inspired by eu90h's Mockfighter
 	</pre>
 	"""
 
