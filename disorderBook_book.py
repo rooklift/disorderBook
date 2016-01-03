@@ -256,45 +256,47 @@ class OrderBook ():
 		return order
 	
 	
-	def parse_order(self, info):		# The caller should be prepared to handle AssertionError, TypeError, and KeyError
+	def parse_order(self, data):		# The caller should be prepared to handle AssertionError, TypeError, and KeyError
 
 		# Thanks to cite-reader for this:
 		# Match behavior of real Stockfighter: recognize both `symbol` and `stock`.
-		if "stock" in info:
-			info["symbol"] = info["stock"]
+		if "stock" in data:
+			data["symbol"] = data["stock"]
 		
 		# Official Stockfighter also recognises lowercase ordertype:
-		if "ordertype" in info:
-			info["orderType"] = info["ordertype"]
+		if "ordertype" in data:
+			data["orderType"] = data["ordertype"]
 
 		# Official stockfighter accepts "fok" and "ioc" as legit orderType:
-		if info["orderType"] == "fok":
-			info["orderType"] = "fill-or-kill"
-		elif info["orderType"] == "ioc":
-			info["orderType"] = "immediate-or-cancel"
+		if data["orderType"] == "fok":
+			data["orderType"] = "fill-or-kill"
+		elif data["orderType"] == "ioc":
+			data["orderType"] = "immediate-or-cancel"
 
-		assert(info["venue"] == self.venue)
-		assert(info["symbol"] == self.symbol)
-		assert(info["account"])
+		if "account" not in data:
+			raise KeyError
 		
-		assert(info["price"] >= 0)		# These 2 could cause TypeError (on string input)
-		assert(info["qty"] > 0)
-
-		assert(info["direction"] in ["buy", "sell"])
-		assert(info["orderType"] in ["limit", "market", "fill-or-kill", "immediate-or-cancel"])
+		if data["price"] < 0:	# Could cause TypeError on string input (and KeyError)
+			raise ValueError
+		if data["qty"] <= 0:	# Likewise
+			raise ValueError
+		if data["direction"] not in ("buy", "sell"):
+			raise ValueError
+		if data["orderType"] not in ("limit", "market", "fill-or-kill", "immediate-or-cancel"):
+			raise ValueError
 
 		
 		order = Order(
 				ok			= True,
 				venue		= self.venue,
 				symbol		= self.symbol,
-				direction	= info["direction"],
-				originalQty	= info["qty"],
-				qty			= info["qty"],
-				price		= info["price"],
-				orderType	= info["orderType"],
+				direction	= data["direction"],
+				originalQty	= data["qty"],
+				qty			= data["qty"],
+				price		= data["price"],
+				orderType	= data["orderType"],
 				id			= self.next_id,
-				account		= info["account"],
+				account		= data["account"],
 				ts			= current_timestamp(),
 				fills		= list(),
 				totalFilled	= 0,
