@@ -31,8 +31,8 @@ There is no authentication by default. If you want authentication, edit `account
 
 ## Non-features
 
-* DisorderBook does not serve traffic directly, except to clients on the same host.
-* DisorderBook does not speak TLS.
+* DisorderBook does not serve traffic directly, except to clients on the same host
+* DisorderBook does not speak TLS
 
 If you want either of these features, put it behind a reverse proxy like NGINX.
 
