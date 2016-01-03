@@ -1,4 +1,4 @@
-# This is a better version of the frontend using the bottle library
+# This is a better version of the frontend using the Bottle library
 # Made by Medecau and Fohristiwhirl
 
 import json, optparse
@@ -10,12 +10,19 @@ current_book_count = 0
 
 auth = dict()
 
+
+# ----------------------------------------------------------------------------------------
+
+BAD_JSON = {"ok": False, "error": "Incoming data was not valid JSON"}
 BOOK_ERROR = {"ok": False, "error": "Book limit exceeded! (See command line options)"}
 NO_AUTH_ERROR = {"ok": False, "error": "Server is in +authentication mode but no API key was received"}
 AUTH_FAILURE = {"ok": False, "error": "Unknown account or wrong API key"}
 AUTH_WEIRDFAIL = {"ok": False, "error": "Account of stored data had no associated API key (this is impossible)"}
 NO_SUCH_ORDER = {"ok": False, "error": "No such order for that Exchange + Symbol combo"}
-
+MISSING_FIELD = {"ok": False, "error": "Incoming POST was missing required field"}
+URL_MISMATCH = {"ok": False, "error": "Incoming POST data disagreed with request URL"}
+FAULTY_DATA = {"ok": False, "error": "Correct keys were present in POST but a value caused an error"}
+BAD_TYPE = {"ok": False, "error": "Correct keys were present in POST but a value had the wrong type"}
 
 # ----------------------------------------------------------------------------------------
 
@@ -63,6 +70,9 @@ def api_key_from_headers(headers):
 
 	
 # ----------------------------------------------------------------------------------------
+
+# Handlers for the various URLs. Since this is a server that must keep going at all costs,
+# most things are wrapped in excessive try statements as a precaution.
 
 
 @route("/ob/api/heartbeat", "GET")
@@ -272,21 +282,38 @@ def make_order(venue, symbol):
 		data = str(request.body.read(), encoding="utf-8")
 		data = json.loads(data)
 	except:
-		return {"ok": False, "error": "Incoming data was not valid JSON"}
+		return BAD_JSON
 
 	try:
 	
-		# Thanks to cite-reader for the following:
+		# Thanks to cite-reader for the following bug-fix:
 		# Match behavior of real Stockfighter: recognize both these forms
-		symbol = None
+		
+		symbol_in_data = None
 		if "stock" in data:
-			symbol = data["stock"]
+			symbol_in_data = data["stock"]
 		elif "symbol" in data:
-			symbol = data["symbol"]
-		assert(symbol is not None)
+			symbol_in_data = data["symbol"]
 
-		venue = data["venue"]
-		account = data["account"]
+		# Various types of faulty POST...
+	
+		if symbol_in_data is None:
+			return MISSING_FIELD
+		
+		try:
+			venue_in_data = data["venue"]
+			account = data["account"]		# Needed late for auth
+		except KeyError:
+			return MISSING_FIELD
+		
+		if "price" not in data or "qty" not in data or "direction" not in data:
+			return MISSING_FIELD
+		
+		if "orderType" not in data and "ordertype" not in data:		# Synonym allowed in official
+			return MISSING_FIELD
+
+		if venue_in_data != venue or symbol_in_data != symbol:
+			return URL_MISMATCH
 
 		try:
 			create_book_if_needed(venue, symbol)
@@ -298,14 +325,20 @@ def make_order(venue, symbol):
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
 				return NO_AUTH_ERROR
-				
+			
 			if account not in auth:
 				return AUTH_FAILURE
 
 			if auth[account] != apikey:
 				return AUTH_FAILURE
 
-		ret = all_venues[venue][symbol].parse_order(data)
+		try:
+			ret = all_venues[venue][symbol].parse_order(data)
+		except AssertionError:
+			return FAULTY_DATA
+		except TypeError:
+			return BAD_TYPE
+
 		assert(ret)
 		return ret
 		
