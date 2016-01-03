@@ -10,7 +10,7 @@ You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/d
 
 ## Usage
 
-* Run `python3 disorderBook_bottle.py` 
+* Run `python3 disorderBook_bottle.py` &nbsp; (also requires `disorderBook_book.py` to be present)
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
