@@ -4,7 +4,7 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 **Requirements:**
 
-* With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling
+* With the help of medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling
 * It can likely be installed using "pip install bottle"
 * The old server will remain as *disorderBook_simple.py* but is deprecated
 
@@ -31,4 +31,6 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 * No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
 
+**Thanks:**
 
+* patio11, cite-reader, Medecau, DanielVF, eu90h
