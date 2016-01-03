@@ -256,82 +256,94 @@ class OrderBook ():
 		return order
 	
 	
-	def parse_order(self, data):		# The caller should be prepared to handle KeyError, TypeError and ValueError
-
-		# Thanks to cite-reader for this:
-		# Match behavior of real Stockfighter: recognize both `symbol` and `stock`.
-		if "stock" in data:
-			data["symbol"] = data["stock"]
+	def parse_order(self, data):
+		# We now assume symbol and venue are correct for this book. Caller's responsibility.
+		# The caller should be prepared to handle KeyError, TypeError and ValueError
 		
-		# Official Stockfighter also recognises lowercase ordertype:
-		if "ordertype" in data:
-			data["orderType"] = data["ordertype"]
+		# Official Stockfighter recognises lowercase ordertype:
+		try:
+			orderType = data["orderType"]
+		except KeyError:
+			orderType = data["ordertype"]	# Could re-raise KeyError
 
 		# Official stockfighter accepts "fok" and "ioc" as legit orderType:
-		if data["orderType"] == "fok":
-			data["orderType"] = "fill-or-kill"
-		elif data["orderType"] == "ioc":
-			data["orderType"] = "immediate-or-cancel"
+		if orderType == "fok":
+			orderType = "fill-or-kill"
+		elif orderType == "ioc":
+			orderType = "immediate-or-cancel"
+		
+		# The following can raise KeyError:
+		account = data["account"]
+		price = data["price"]
+		qty = data["qty"]
+		direction = data["direction"]
+		
+		# Prices on market orders are irrelevant, so allow broken ones:
+		if orderType == "market":
+			if not isinstance(price, int):
+				price = 0
+			elif price < 0:
+				price = 0
 
-		if "account" not in data:
-			raise KeyError
+		price = int(price)	# Could raise TypeError
+		qty = int(qty)		# Could raise TypeError
 		
-		if data["price"] < 0:	# Could cause TypeError on string input (and KeyError)
+		if price < 0:
 			raise ValueError
-		if data["qty"] <= 0:	# Likewise
+		if qty <= 0:
 			raise ValueError
-		if data["direction"] not in ("buy", "sell"):
+		if direction not in ("buy", "sell"):
 			raise ValueError
-		if data["orderType"] not in ("limit", "market", "fill-or-kill", "immediate-or-cancel"):
+		if orderType not in ("limit", "market", "fill-or-kill", "immediate-or-cancel"):
 			raise ValueError
 
-		
-		order = Order(
-				ok			= True,
-				venue		= self.venue,
-				symbol		= self.symbol,
-				direction	= data["direction"],
-				originalQty	= data["qty"],
-				qty			= data["qty"],
-				price		= data["price"],
-				orderType	= data["orderType"],
-				id			= self.next_id,
-				account		= data["account"],
-				ts			= current_timestamp(),
-				fills		= list(),
-				totalFilled	= 0,
-				open		= True
-				)
-		
+		id = self.next_id
 		self.next_id += 1
 		
-		self.id_lookup_table[order["id"]] = order			# So we can find it for status/cancel
+		order = Order(
+				ok          = True,
+				venue       = self.venue,
+				symbol      = self.symbol,
+				direction   = direction,
+				originalQty = qty,
+				qty         = qty,
+				price       = price,
+				orderType   = orderType,
+				id          = id,
+				account     = account,
+				ts          = current_timestamp(),
+				fills       = list(),
+				totalFilled = 0,
+				open        = True
+				)
 		
-		if order["account"] not in self.account_order_lists:
-			self.account_order_lists[order["account"]] = list()
-		self.account_order_lists[order["account"]].append(order)		# So we can list all an account's orders
+		self.id_lookup_table[id] = order			# So we can find it for status/cancel
+		
+		if account not in self.account_order_lists:
+			self.account_order_lists[account] = list()
+		self.account_order_lists[account].append(order)		# So we can list all an account's orders
 			
 		# Limit and IOC orders are easy...
 		
-		if order["orderType"] == "limit" or order["orderType"] == "immediate-or-cancel":
+		if orderType == "limit" or orderType == "immediate-or-cancel":
 			self.run_order(order)
 			
 		# FOK orders are slightly tricky...
 		
-		elif order["orderType"] == "fill-or-kill":
-			if order["direction"] == "buy":
-				if self.fok_can_buy(price = order["price"], qty = order["qty"]):
+		elif orderType == "fill-or-kill":
+			if direction == "buy":
+				if self.fok_can_buy(price = price, qty = qty):
 					self.run_order(order)
 			else:
-				if self.fok_can_sell(price = order["price"], qty = order["qty"]):
+				if self.fok_can_sell(price = price, qty = qty):
 					self.run_order(order)
 		
 		# Market orders are slightly tricky...
 		
-		elif order["orderType"] == "market":
-			actually_stated_price = order["price"]
+		elif orderType == "market":
+			actually_stated_price = price
 			
-			if order["direction"] == "buy":
+			if direction == "buy":
 				if self.asks:									# We use the cheap trick of temporarily setting
 					order["price"] = self.asks[-1]["price"]		# the order's price to the worst one on the book
 			else:
