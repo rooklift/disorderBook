@@ -1,12 +1,12 @@
 # disorderBook
-An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3
+An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3<br>
 Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 ## Requirements
 
-With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; install it through `pip install -r requirements.txt`. The old server will remain as `disorderBook_simple.py`, but is deprecated.
+With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; install it through `pip install bottle`. The old server will remain as `disorderBook_simple.py`, but is deprecated.
 
-We strongly suggest [setting up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
+You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
 
 ## Usage
 
@@ -24,7 +24,7 @@ There is no authentication by default. If you want authentication, edit `account
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
 
-## Missing Features
+## Missing features
 
 * No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
