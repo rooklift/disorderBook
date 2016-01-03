@@ -256,20 +256,33 @@ class OrderBook ():
 		return order
 	
 	
-	def parse_order(self, info):
+	def parse_order(self, info):		# The caller should be prepared to handle AssertionError, TypeError, and KeyError
 
 		# Thanks to cite-reader for this:
 		# Match behavior of real Stockfighter: recognize both `symbol` and `stock`.
 		if "stock" in info:
 			info["symbol"] = info["stock"]
+		
+		# Official Stockfighter also recognises lowercase ordertype:
+		if "ordertype" in info:
+			info["orderType"] = info["ordertype"]
+
+		# Official stockfighter accepts "fok" and "ioc" as legit orderType:
+		if info["orderType"] == "fok":
+			info["orderType"] = "fill-or-kill"
+		elif info["orderType"] == "ioc":
+			info["orderType"] = "immediate-or-cancel"
 
 		assert(info["venue"] == self.venue)
 		assert(info["symbol"] == self.symbol)
-		assert(info["direction"] in ["buy", "sell"])
-		assert(info["qty"] > 0)
-		assert(info["price"] >= 0)
-		assert(info["orderType"] in ["limit", "market", "fill-or-kill", "immediate-or-cancel"])
 		assert(info["account"])
+		
+		assert(info["price"] >= 0)		# These 2 could cause TypeError (on string input)
+		assert(info["qty"] > 0)
+
+		assert(info["direction"] in ["buy", "sell"])
+		assert(info["orderType"] in ["limit", "market", "fill-or-kill", "immediate-or-cancel"])
+
 		
 		order = Order(
 				ok			= True,
