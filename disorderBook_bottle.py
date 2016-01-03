@@ -21,8 +21,8 @@ AUTH_WEIRDFAIL = {"ok": False, "error": "Account of stored data had no associate
 NO_SUCH_ORDER = {"ok": False, "error": "No such order for that Exchange + Symbol combo"}
 MISSING_FIELD = {"ok": False, "error": "Incoming POST was missing required field"}
 URL_MISMATCH = {"ok": False, "error": "Incoming POST data disagreed with request URL"}
-FAULTY_DATA = {"ok": False, "error": "Correct keys were present in POST but a value caused an error"}
 BAD_TYPE = {"ok": False, "error": "Correct keys were present in POST but a value had the wrong type"}
+BAD_VALUE = {"ok": False, "error": "Illegal value (usually a non-positive number)"}
 
 # ----------------------------------------------------------------------------------------
 
@@ -305,16 +305,10 @@ def make_order(venue, symbol):
 			account = data["account"]		# Needed late for auth
 		except KeyError:
 			return MISSING_FIELD
-		
-		if "price" not in data or "qty" not in data or "direction" not in data:
-			return MISSING_FIELD
-		
-		if "orderType" not in data and "ordertype" not in data:		# Synonym allowed in official
-			return MISSING_FIELD
 
 		if venue_in_data != venue or symbol_in_data != symbol:
 			return URL_MISMATCH
-
+		
 		try:
 			create_book_if_needed(venue, symbol)
 		except TooManyBooks:
@@ -334,10 +328,12 @@ def make_order(venue, symbol):
 
 		try:
 			ret = all_venues[venue][symbol].parse_order(data)
-		except AssertionError:
-			return FAULTY_DATA
 		except TypeError:
 			return BAD_TYPE
+		except KeyError:
+			return MISSING_FIELD
+		except ValueError:
+			return BAD_VALUE
 
 		assert(ret)
 		return ret
