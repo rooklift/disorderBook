@@ -23,12 +23,12 @@ There is no authentication by default. If you want authentication, edit `account
 * Your bots can use whatever accounts, venues, and symbols they like
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
-* Scores can be accessed at &nbsp; /ob/api/venues/<venue>/stocks/<symbol>/scores &nbsp; (accessing this with your bots is cheating though)
+* Scores can be accessed at &nbsp; **/ob/api/venues/:venue/stocks/:symbol/scores** &nbsp; (accessing this with your bots is cheating though)
 
 ## Missing features / issues
 
 * No websockets yet, or maybe ever
-* Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
+* Everything persists forever; we will *eventually* run out of RAM or the CPU will get bogged down
 
 ## Non-features
 
