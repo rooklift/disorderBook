@@ -27,6 +27,8 @@ def main():
 	
 	myshares, mycents = 0, 0
 	
+	print("Waiting to see some prices before placing orders...")
+	
 	while 1:
 		try:
 			last_price = sf.quote(venue, symbol)["last"]
