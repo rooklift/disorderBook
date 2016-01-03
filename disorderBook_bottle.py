@@ -82,7 +82,7 @@ def venue_heartbeat(venue):
 	else:
 		return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
-
+@route("/ob/api/venues/<venue>", "GET")
 @route("/ob/api/venues/<venue>/stocks", "GET")
 def stocklist(venue):
 	if venue in all_venues:
@@ -96,8 +96,6 @@ def stocklist(venue):
 				"error": "Venue {} does not exist (create it by using it)".format(venue)
 			}
 	return ret
-
-route("/ob/api/venues/<venue>", "GET", stocklist)				# Alternate URL
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
@@ -232,6 +230,7 @@ def status_all_orders_one_stock(venue, account, symbol):
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "DELETE")
+@route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")
 def cancel(venue, symbol, id):
 
 	try:
@@ -265,7 +264,7 @@ def cancel(venue, symbol, id):
 		ret = response_from_exception(e)
 		return ret
 
-route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST", cancel)		# Alternate method and URL
+
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
