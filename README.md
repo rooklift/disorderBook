@@ -2,17 +2,17 @@
 An implementation of a **[Stockfighter](http://stockfighter.io)** server in Python 3<br>
 Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
-## Requirements
-
-With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; you could install it through `pip install bottle`, but a copy of the library is included in this repo (and will be used if Bottle is not otherwise installed).
-
-You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
-
 ## Usage
 
 * Run `python3 disorderBook_main.py` &nbsp; (also requires `disorderBook_book.py` to be present)
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
+
+## Requirements
+
+With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; a copy of the library is included in the repo, though you could also install it with through `pip install bottle`.
+
+You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
 
 ## Authentication
 
