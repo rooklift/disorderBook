@@ -105,7 +105,7 @@ class OrderBook ():
 
 	def account_from_order_id(self, id):
 		try:
-			return self.id_lookup_table[int(id)]["account"]
+			return self.id_lookup_table[id]["account"]
 		except KeyError:
 			return None
 
@@ -127,7 +127,7 @@ class OrderBook ():
 	
 	
 	def get_status(self, id):
-		return self.id_lookup_table[int(id)]
+		return self.id_lookup_table[id]
 	
 	
 	def get_all_orders(self, account):
@@ -248,7 +248,7 @@ class OrderBook ():
 	
 	
 	def cancel_order(self, id):
-		order = self.id_lookup_table[int(id)]
+		order = self.id_lookup_table[id]
 		if order["open"]:
 			order["qty"] = 0
 			order["open"] = False

@@ -146,6 +146,8 @@ def quote(venue, symbol):
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
 def status(venue, symbol, id):
 	
+	id = int(id)
+	
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
@@ -153,7 +155,7 @@ def status(venue, symbol, id):
 	
 	try:
 
-		account = all_venues[venue][symbol].account_from_order_id(int(id))
+		account = all_venues[venue][symbol].account_from_order_id(id)
 		if not account:
 			return NO_SUCH_ORDER
 
@@ -169,7 +171,7 @@ def status(venue, symbol, id):
 			if auth[account] != apikey:
 				return AUTH_FAILURE
 	
-		ret = all_venues[venue][symbol].get_status(int(id))
+		ret = all_venues[venue][symbol].get_status(id)
 		assert(ret)
 		return ret 
 
@@ -247,6 +249,8 @@ def status_all_orders_one_stock(venue, account, symbol):
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")
 def cancel(venue, symbol, id):
 
+	id = int(id)
+
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
@@ -254,7 +258,7 @@ def cancel(venue, symbol, id):
 	
 	try:
 	
-		account = all_venues[venue][symbol].account_from_order_id(int(id))
+		account = all_venues[venue][symbol].account_from_order_id(id)
 		if not account:
 			return NO_SUCH_ORDER
 	
@@ -270,7 +274,7 @@ def cancel(venue, symbol, id):
 			if auth[account] != apikey:
 				return AUTH_FAILURE
 
-		ret = all_venues[venue][symbol].cancel_order(int(id))
+		ret = all_venues[venue][symbol].cancel_order(id)
 		assert(ret)
 		return ret
 		
