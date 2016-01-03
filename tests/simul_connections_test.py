@@ -6,7 +6,7 @@ import copy, inspect, json, requests, threading, time, queue, random
 
 
 _API_URL = "http://127.0.0.1:8000/ob/api/"
-_API_KEY = "unused"
+_API_KEY = "exb123456"
 
 _extra_headers = {"X-Starfighter-Authorization" : _API_KEY}
 
@@ -180,9 +180,9 @@ def market_maker():
 
 	INFO = Order()
 	
-	INFO.account = "MARKETMAKER"
-	INFO.venue = "FOOEX"
-	INFO.symbol = "CATS"
+	INFO.account = "EXB123456"
+	INFO.venue = "TESTEX"
+	INFO.symbol = "FOOBAR"
 	INFO.orderType = "limit"
 	INFO.qty = 100
 	
