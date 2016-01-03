@@ -4,6 +4,12 @@ import bisect, datetime, json
 def current_timestamp():
 	ts = str(datetime.datetime.utcnow().isoformat())		# Thanks to medecau for this
 	return ts
+
+
+class Position():
+	def __init__(self):
+		self.shares = 0
+		self.cents = 0
 	
 
 class Order (dict):
@@ -63,26 +69,6 @@ class Order (dict):
 		else:
 			return False
 
-	# This is the actual meat of the trade-making algorithm...
-	
-	def standing_cross(self, other, timestamp, book):		# Meaning this object is the standing order
-		quantity = min(self["qty"], other["qty"])
-		self["qty"] -= quantity
-		self["totalFilled"] += quantity
-		other["qty"] -= quantity
-		other["totalFilled"] += quantity
-
-		book.last_trade_time = timestamp
-		book.last_trade_price = self["price"]
-		book.last_trade_size = quantity
-		
-		fill = dict(price = self["price"], qty = quantity, ts = timestamp)
-		
-		for o in self, other:
-			o["fills"].append(fill)
-			if o["qty"] == 0:
-				o["open"] = False
-
 
 # For the orderbook itself, the general plan is to keep a list of bids and a list of asks,
 # always *kept* sorted (never sorted as a whole), with the top priority order first in line.
@@ -101,6 +87,7 @@ class OrderBook ():
 		self.last_trade_time = None
 		self.last_trade_price = None
 		self.last_trade_size = None
+		self.positions = dict()
 
 
 	def account_from_order_id(self, id):
@@ -357,35 +344,80 @@ class OrderBook ():
 		return order
 
 
-	def run_order(self, order):
+	def run_order(self, incoming):
 	
-		incomingprice = order["price"]
+		incomingprice = incoming["price"]
 		timestamp = current_timestamp()
 	
-		if order["direction"] == "sell":
+		if incoming["direction"] == "sell":
 			for standing in self.bids:
 				if standing["price"] >= incomingprice:
-					standing.standing_cross(order, timestamp, self)
-					if order["qty"] == 0:
+					self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
+					if incoming["qty"] == 0:
 						break
 				else:
 					break		# Taking advantage of the sortedness of the book's lists
 		else:
 			for standing in self.asks:
 				if standing["price"] <= incomingprice:
-					standing.standing_cross(order, timestamp, self)
-					if order["qty"] == 0:
+					self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
+					if incoming["qty"] == 0:
 						break
 				else:
 					break
 		
 		self.cleanup_closed_orders()
 		
-		if order["orderType"] == "limit":		# Only limit orders rest on the book
-			if order["open"]:
-				if order["direction"] == "buy":
-					bisect.insort(self.bids, order)
+		if incoming["orderType"] == "limit":		# Only limit orders rest on the book
+			if incoming["open"]:
+				if incoming["direction"] == "buy":
+					bisect.insort(self.bids, incoming)
 				else:
-					bisect.insort(self.asks, order)
+					bisect.insort(self.asks, incoming)
 		
-		return order
+		return incoming
+	
+	
+	def order_cross(self, *, standing, incoming, timestamp):		# Force named args to not get it wrong
+		quantity = min(standing["qty"], incoming["qty"])
+		standing["qty"] -= quantity
+		standing["totalFilled"] += quantity
+		incoming["qty"] -= quantity
+		incoming["totalFilled"] += quantity
+		
+		price = standing["price"]
+		
+		self.last_trade_time = timestamp
+		self.last_trade_price = price
+		self.last_trade_size = quantity
+		
+		fill = dict(price = price, qty = quantity, ts = timestamp)
+		
+		for o in standing, incoming:
+			o["fills"].append(fill)
+			if o["qty"] == 0:
+				o["open"] = False
+		
+		# All the following is just to track "score" for PvP (or PvE) purposes:
+		
+		s_account = standing["account"]
+		i_account = incoming["account"]
+		
+		if s_account not in self.positions:
+			self.positions[s_account] = Position()
+		if i_account not in self.positions:
+			self.positions[i_account] = Position()
+		
+		s_pos = self.positions[s_account]
+		i_pos = self.positions[i_account]
+		
+		if standing["direction"] == "buy":
+			s_pos.shares += quantity
+			s_pos.cents -= quantity * price
+			i_pos.shares -= quantity
+			i_pos.cents += quantity * price
+		else:
+			s_pos.shares -= quantity
+			s_pos.cents += quantity * price
+			i_pos.shares += quantity
+			i_pos.cents -= quantity * price

@@ -351,6 +351,36 @@ def make_order(venue, symbol):
 		return ret
 
 
+# This next isn't part of the official API. FIXME? Maybe should require authentication...
+
+@route("/ob/api/venues/<venue>/stocks/<symbol>/scores", "GET")
+def scores(venue, symbol):
+	
+	try:
+	
+		if venue not in all_venues or symbol not in all_venues[venue]:
+			return "<pre>No such venue!</pre>"
+		
+		currentprice = all_venues[venue][symbol].last_trade_price
+		if currentprice is None:
+			return "<pre>No trading activity yet.</pre>"
+		
+		results = []
+		for account, pos in all_venues[venue][symbol].positions.items():
+			nav = pos.shares * currentprice + pos.cents
+			results.append("{:<15}  USD: ${:<12}  Shares:{:<12}  NAV: ${:<12}".format(account, pos.cents // 100, pos.shares, nav // 100))
+		
+		res_string = "\n".join(results)
+		
+		ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n\n{}</pre>".format(venue, symbol, currentprice / 100, res_string, book.current_timestamp())
+		
+		return ret
+	
+	except Exception as e:
+		ret = response_from_exception(e)
+		return ret
+
+
 @route("/")
 def home():
 	return """
