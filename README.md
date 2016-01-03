@@ -4,7 +4,7 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 ## Requirements
 
-With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; install it through `pip install bottle`. The old server will remain as `disorderBook_simple.py`, but is deprecated.
+With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; you could install it through `pip install bottle`, but a copy of the library is included in this repo (and will be used if Bottle is not otherwise installed).
 
 You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
 
