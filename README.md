@@ -24,7 +24,7 @@ There is no authentication by default. If you want authentication, edit `account
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
 
-## Missing features
+## Missing features / issues
 
 * No websockets yet, or maybe ever
 * Everything persists forever; we will eventually run out of RAM or the CPU will get bogged down
