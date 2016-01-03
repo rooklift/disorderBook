@@ -16,7 +16,9 @@ AUTH_FAILURE = {"ok": False, "error": "Unknown account or wrong API key"}
 AUTH_WEIRDFAIL = {"ok": False, "error": "Account of stored data had no associated API key (this is impossible)"}
 NO_SUCH_ORDER = {"ok": False, "error": "No such order for that Exchange + Symbol combo"}
 
+
 # ----------------------------------------------------------------------------------------
+
 
 class TooManyBooks (Exception):
 	pass
@@ -61,6 +63,7 @@ def api_key_from_headers(headers):
 
 	
 # ----------------------------------------------------------------------------------------
+
 
 @route("/ob/api/heartbeat", "GET")
 def heartbeat():
@@ -197,7 +200,6 @@ def status_all_orders(venue, account):
 		return ret
 
 
-
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
 def status_all_orders_one_stock(venue, account, symbol):
 
@@ -265,8 +267,6 @@ def cancel(venue, symbol, id):
 		return ret
 
 
-
-
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
 def make_order(venue, symbol):
 
@@ -325,12 +325,13 @@ def home():
 	By Amtiskaw (Fohristiwhirl on GitHub) and Medecau
 	With helpful help from cite-reader and DanielVF
 	
-	Mad props to patio11 for the fundamental, elegant design!
+	Mad props to patio11 for the elegant fundamental design!
 	Also inspired by eu90h's Mockfighter
 	</pre>
 	"""
 
 # ----------------------------------------------------------------------------------------
+
 
 def create_auth_records():
 	global auth
@@ -338,6 +339,7 @@ def create_auth_records():
 	
 	with open(opts.accounts_file) as infile:
 		auth = json.load(infile)
+
 
 def main():
 	global opts; global args
