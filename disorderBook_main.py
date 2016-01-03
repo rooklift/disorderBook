@@ -2,8 +2,12 @@
 # Made by Medecau and Fohristiwhirl
 
 import json, optparse
-from bottle import route, request, run
 import disorderBook_book as book
+try:
+	from bottle import route, request, run
+except ImportError:
+	from bottle_0_12_9 import route, request, run		# copy in our repo
+
 
 all_venues = dict()			# dict: venue string ---> dict: stock string ---> OrderBook objects
 current_book_count = 0
