@@ -23,6 +23,7 @@ There is no authentication by default. If you want authentication, edit `account
 * Your bots can use whatever accounts, venues, and symbols they like
 * New exchanges/stocks are created as needed when someone tries to do something on them
 * Two stupid bots are included - you must start them (or many copies) manually
+* Scores can be accessed at http://127.0.0.1:8000/ob/api/venues/<venue>/stocks/<symbol>/scores (accessing this with your bots is cheating though)
 
 ## Missing features / issues
 
