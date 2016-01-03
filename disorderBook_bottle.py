@@ -85,20 +85,14 @@ def venue_heartbeat(venue):
 	else:
 		return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
+
 @route("/ob/api/venues/<venue>", "GET")
 @route("/ob/api/venues/<venue>/stocks", "GET")
 def stocklist(venue):
 	if venue in all_venues:
-		ret = {
-				"ok" : True,
-				"symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]
-			}
+		return {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]}
 	else:
-		ret = {
-				"ok" : False,
-				"error": "Venue {} does not exist (create it by using it)".format(venue)
-			}
-	return ret
+		return {"ok" : False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
@@ -144,23 +138,26 @@ def status(venue, symbol, id):
 		return BOOK_ERROR
 	
 	try:
+
+		account = all_venues[venue][symbol].account_from_order_id(int(id))
+		if not account:
+			return NO_SUCH_ORDER
+
 		if auth:
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
 				return NO_AUTH_ERROR
-	
-		ret = all_venues[venue][symbol].get_status(int(id))
-		assert(ret)		# Fails if ID invalid
 		
-		if auth:
-			account = ret["account"]
 			if account not in auth:
 				return AUTH_WEIRDFAIL
-			elif auth[account] != apikey:
+	
+			if auth[account] != apikey:
 				return AUTH_FAILURE
-			else:
-				return ret
+	
+		ret = all_venues[venue][symbol].get_status(int(id))
+		assert(ret)
+		return ret 
 
 	except Exception as e:
 		ret = response_from_exception(e)
@@ -179,8 +176,9 @@ def status_all_orders(venue, account):
 				return NO_AUTH_ERROR
 
 			if account not in auth:
-				return AUTH_WEIRDFAIL
-			elif auth[account] != apikey:
+				return AUTH_FAILURE
+	
+			if auth[account] != apikey:
 				return AUTH_FAILURE
 		
 		orders = []
@@ -217,7 +215,7 @@ def status_all_orders_one_stock(venue, account, symbol):
 				return NO_AUTH_ERROR
 
 			if account not in auth:
-				return AUTH_WEIRDFAIL
+				return AUTH_FAILURE
 
 			if auth[account] != apikey:
 				return AUTH_FAILURE
@@ -242,15 +240,15 @@ def cancel(venue, symbol, id):
 	
 	try:
 	
+		account = all_venues[venue][symbol].account_from_order_id(int(id))
+		if not account:
+			return NO_SUCH_ORDER
+	
 		if auth:
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
 				return NO_AUTH_ERROR
-		
-			account = all_venues[venue][symbol].account_from_order_id(int(id))
-			if not account:
-				return NO_SUCH_ORDER
 				
 			if account not in auth:
 				return AUTH_WEIRDFAIL
