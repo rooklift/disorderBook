@@ -256,7 +256,7 @@ class OrderBook ():
 		return order
 	
 	
-	def parse_order(self, data):		# The caller should be prepared to handle AssertionError, TypeError, and KeyError
+	def parse_order(self, data):		# The caller should be prepared to handle KeyError, TypeError and ValueError
 
 		# Thanks to cite-reader for this:
 		# Match behavior of real Stockfighter: recognize both `symbol` and `stock`.
