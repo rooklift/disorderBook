@@ -265,6 +265,8 @@ def cancel(venue, symbol, id):
 		ret = response_from_exception(e)
 		return ret
 
+route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST", cancel)		# Alternate method and URL
+
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
 def make_order(venue, symbol):
@@ -310,41 +312,6 @@ def make_order(venue, symbol):
 		assert(ret)
 		return ret
 		
-	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
-
-
-@route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")		# Alternate cancel method, for people without DELETE
-def cancel_via_post(venue, symbol, id):
-	
-	try:
-		create_book_if_needed(venue, symbol)
-	except TooManyBooks:
-		return BOOK_ERROR
-	
-	try:
-	
-		if auth:
-			try:
-				apikey = api_key_from_headers(request.headers)
-			except NoApiKey:
-				return NO_AUTH_ERROR
-		
-			account = all_venues[venue][symbol].account_from_order_id(int(id))
-			if not account:
-				return NO_SUCH_ORDER
-				
-			if account not in auth:
-				return AUTH_WEIRDFAIL
-
-			if auth[account] != apikey:
-				return AUTH_FAILURE
-	
-		ret = all_venues[venue][symbol].cancel_order(int(id))
-		assert(ret)
-		return ret
-	
 	except Exception as e:
 		ret = response_from_exception(e)
 		return ret
