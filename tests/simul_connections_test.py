@@ -176,7 +176,7 @@ def execute_from_queue(task_queue, result_queue, verbose = False):
 	return
 
 
-def market_maker():
+def stress_test():
 
 	INFO = Order()
 	
@@ -212,5 +212,5 @@ def market_maker():
 
 
 if __name__ == "__main__":
-	market_maker()
+	stress_test()
 
