@@ -11,10 +11,10 @@ def main():
 	except:
 		venue, symbol = "BUYEX", "DOGS"
 
-	account = "EXB123456"			# "NZ" + str(random.randint(0,999999999))
-
+	account = "NZ" + str(random.randint(0,999999999))		# "EXB123456"
+	sf.change_api_key("nokey")
+	
 	orderType = "limit"
-
 	all_orders = []
 
 	while 1:

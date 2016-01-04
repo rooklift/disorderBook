@@ -6,9 +6,13 @@ import json, requests
 
 _API_URL = "http://127.0.0.1:8000/ob/api/"
 
-_api_key = "exb123456"
-_api_cookie_text = "api_key={}".format(_api_key)
-_extra_headers = {"X-Starfighter-Authorization" : _api_key, "Cookie" : _api_cookie_text}
+_api_key = "no_api_key_set"
+_extra_headers = {"X-Starfighter-Authorization" : _api_key}
+
+
+def change_api_key(k):
+	global _api_key;			_api_key = str(k)
+	global _extra_headers;		_extra_headers = {"X-Starfighter-Authorization" : _api_key}
 
 
 def get_json_from_url(url, postdata = None, deletemethod = False, verbose = False, superverbose = False, require_ok = True):		# Note: POST overrides DELETE
@@ -21,10 +25,10 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
 		else:
 			raw = requests.get(url, headers = _extra_headers)
 	except TimeoutError:
-		print("TIMED OUT WAITING FOR REPLY (REQUEST MAY STILL HAVE SUCCEEDED).")
+		print("ERROR -- TimeoutError")
 		return None
 	except requests.exceptions.ConnectionError:
-		print("TIMED OUT WAITING FOR REPLY (REQUEST MAY STILL HAVE SUCCEEDED).")
+		print("ERROR -- requests.exceptions.ConnectionError")
 		return None
 	
 	# We got some sort of reply...

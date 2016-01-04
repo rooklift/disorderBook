@@ -16,15 +16,13 @@ def main():
 	except:
 		venue, symbol = "BUYEX", "DOGS"
 
-	account = "EXB123456"			# "LH" + str(random.randint(0,999999999))
-
+	account = "LH" + str(random.randint(0,999999999))		# "EXB123456"
+	sf.change_api_key("nokey")
+	
 	orderType = "limit"
-
 	last_id = None
 	last_price = None
-	
 	active_ids = []
-	
 	myshares, mycents = 0, 0
 	
 	print("Waiting to see some prices before placing orders...")
