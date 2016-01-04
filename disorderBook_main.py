@@ -4,9 +4,9 @@
 import json, optparse
 import disorderBook_book
 try:
-	from bottle import route, request, run
+	from bottle import route, request, response, run
 except ImportError:
-	from bottle_0_12_9 import route, request, run		# copy in our repo
+	from bottle_0_12_9 import route, request, response, run		# copy in our repo
 
 
 all_venues = dict()			# dict: venue string ---> dict: stock string ---> OrderBook objects
@@ -39,7 +39,7 @@ class NoApiKey (Exception):
 	pass
 
 
-def response_from_exception(e):
+def dict_from_exception(e):
 	di = dict()
 	di["ok"] = False
 	di["error"] = str(e)
@@ -97,6 +97,7 @@ def venue_heartbeat(venue):
 	if venue in all_venues:
 		return {"ok": True, "venue": venue}
 	else:
+		response.status = 404
 		return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
 
@@ -106,6 +107,7 @@ def stocklist(venue):
 	if venue in all_venues:
 		return {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]}
 	else:
+		response.status = 404
 		return {"ok" : False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
 
@@ -115,6 +117,7 @@ def orderbook(venue, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
+		response.status = 400
 		return BOOK_ERROR
 
 	try:
@@ -122,8 +125,8 @@ def orderbook(venue, symbol):
 		assert(ret)
 		return ret
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/quote", "GET")
@@ -132,6 +135,7 @@ def quote(venue, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
+		response.status = 400
 		return BOOK_ERROR
 
 	try:
@@ -139,8 +143,8 @@ def quote(venue, symbol):
 		assert(ret)
 		return ret
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
@@ -151,24 +155,29 @@ def status(venue, symbol, id):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
+		response.status = 400
 		return BOOK_ERROR
 	
 	try:
 
 		account = all_venues[venue][symbol].account_from_order_id(id)
 		if not account:
+			response.status = 404
 			return NO_SUCH_ORDER
 
 		if auth:
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
+				response.status = 401
 				return NO_AUTH_ERROR
 		
 			if account not in auth:
+				response.status = 401
 				return AUTH_WEIRDFAIL
 	
 			if auth[account] != apikey:
+				response.status = 401
 				return AUTH_FAILURE
 	
 		ret = all_venues[venue][symbol].get_status(id)
@@ -176,8 +185,8 @@ def status(venue, symbol, id):
 		return ret 
 
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
@@ -189,12 +198,15 @@ def status_all_orders(venue, account):
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
+				response.status = 401
 				return NO_AUTH_ERROR
 
 			if account not in auth:
+				response.status = 401
 				return AUTH_FAILURE
 	
 			if auth[account] != apikey:
+				response.status = 401
 				return AUTH_FAILURE
 		
 		orders = []
@@ -210,8 +222,8 @@ def status_all_orders(venue, account):
 		return ret
 	
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
@@ -220,6 +232,7 @@ def status_all_orders_one_stock(venue, account, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
+		response.status = 400
 		return BOOK_ERROR
 	
 	try:
@@ -228,12 +241,15 @@ def status_all_orders_one_stock(venue, account, symbol):
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
+				response.status = 401
 				return NO_AUTH_ERROR
 
 			if account not in auth:
+				response.status = 401
 				return AUTH_FAILURE
 
 			if auth[account] != apikey:
+				response.status = 401
 				return AUTH_FAILURE
 
 		ret = all_venues[venue][symbol].get_all_orders(account)
@@ -241,8 +257,8 @@ def status_all_orders_one_stock(venue, account, symbol):
 		return ret
 
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "DELETE")
@@ -254,24 +270,29 @@ def cancel(venue, symbol, id):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
+		response.status = 400
 		return BOOK_ERROR
 	
 	try:
 	
 		account = all_venues[venue][symbol].account_from_order_id(id)
 		if not account:
+			response.status = 404
 			return NO_SUCH_ORDER
 	
 		if auth:
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
+				response.status = 401
 				return NO_AUTH_ERROR
 				
 			if account not in auth:
+				response.status = 401
 				return AUTH_WEIRDFAIL
 
 			if auth[account] != apikey:
+				response.status = 401
 				return AUTH_FAILURE
 
 		ret = all_venues[venue][symbol].cancel_order(id)
@@ -279,8 +300,8 @@ def cancel(venue, symbol, id):
 		return ret
 		
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
@@ -290,6 +311,7 @@ def make_order(venue, symbol):
 		data = str(request.body.read(), encoding="utf-8")
 		data = json.loads(data)
 	except:
+		response.status = 400
 		return BAD_JSON
 
 	try:
@@ -314,11 +336,13 @@ def make_order(venue, symbol):
 		# Various types of faulty POST...
 		
 		if venue_in_data != venue or symbol_in_data != symbol:
+			response.status = 400
 			return URL_MISMATCH
 		
 		try:
 			create_book_if_needed(venue, symbol)
 		except TooManyBooks:
+			response.status = 400
 			return BOOK_ERROR
 		
 		if auth:
@@ -326,34 +350,41 @@ def make_order(venue, symbol):
 			try:
 				account = data["account"]
 			except KeyError:
+				response.status = 400
 				return MISSING_FIELD
 		
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
+				response.status = 401
 				return NO_AUTH_ERROR
 			
 			if account not in auth:
+				response.status = 401
 				return AUTH_FAILURE
 
 			if auth[account] != apikey:
+				response.status = 401
 				return AUTH_FAILURE
 
 		try:
 			ret = all_venues[venue][symbol].parse_order(data)
 		except TypeError:
+			response.status = 400
 			return BAD_TYPE
 		except KeyError:
+			response.status = 400
 			return MISSING_FIELD
 		except ValueError:
+			response.status = 400
 			return BAD_VALUE
 
 		assert(ret)
 		return ret
 		
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 # This next isn't part of the official API. FIXME? Maybe should require authentication...
@@ -364,6 +395,7 @@ def scores(venue, symbol):
 	try:
 	
 		if venue not in all_venues or symbol not in all_venues[venue]:
+			response.status = 404
 			return "<pre>No such venue/stock!</pre>"
 		
 		currentprice = all_venues[venue][symbol].last_trade_price
@@ -395,8 +427,8 @@ def scores(venue, symbol):
 		return ret
 	
 	except Exception as e:
-		ret = response_from_exception(e)
-		return ret
+		response.status = 500
+		return dict_from_exception(e)
 
 
 @route("/", "GET")
