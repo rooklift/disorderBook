@@ -78,6 +78,7 @@ class OrderBook ():
 	def __init__(self, venue, symbol):
 		self.venue = str(venue)
 		self.symbol = str(symbol)
+		self.starttime = current_timestamp()
 		self.bids = []
 		self.asks = []
 		self.id_lookup_table = dict()			# order id ---> order object

@@ -2,7 +2,7 @@
 # Made by Medecau and Fohristiwhirl
 
 import json, optparse
-import disorderBook_book as book
+import disorderBook_book
 try:
 	from bottle import route, request, run
 except ImportError:
@@ -59,7 +59,7 @@ def create_book_if_needed(venue, symbol):
 		if opts.maxbooks > 0:
 			if current_book_count + 1 > opts.maxbooks:
 				raise TooManyBooks
-		all_venues[venue][symbol] = book.OrderBook(venue, symbol)
+		all_venues[venue][symbol] = disorderBook_book.OrderBook(venue, symbol)
 		current_book_count += 1
 
 
@@ -372,7 +372,9 @@ def scores(venue, symbol):
 		
 		all_data = []
 		
-		for account, pos in all_venues[venue][symbol].positions.items():
+		book_obj = all_venues[venue][symbol]
+		
+		for account, pos in book_obj.positions.items():
 			all_data.append([account, pos.cents, pos.shares, pos.cents + pos.shares * currentprice])
 			
 		all_data = sorted(all_data, key = lambda x : x[3], reverse = True)
@@ -383,7 +385,9 @@ def scores(venue, symbol):
 		
 		res_string = "\n".join(result_lines)
 		
-		ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n\n{}</pre>".format(venue, symbol, currentprice / 100, res_string, book.current_timestamp())
+		ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n\nStart time:    {}\nCurrent time:  {}</pre>".format(
+					venue, symbol, currentprice / 100, res_string, book_obj.starttime, disorderBook_book.current_timestamp()
+				)
 		
 		return ret
 	
@@ -392,7 +396,8 @@ def scores(venue, symbol):
 		return ret
 
 
-@route("/")
+@route("/", "GET")
+@route("/ob/api/", "GET")
 def home():
 	return """
 	<pre>
@@ -463,8 +468,9 @@ def main():
 	if opts.accounts_file:
 		create_auth_records()
 	
+	print("disorderBook starting up...\n")
 	if not auth:
-		print("\n -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
+		print(" -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
 	
 	run(host = "127.0.0.1", port = 8000)
 	
