@@ -303,14 +303,16 @@ def make_order(venue, symbol):
 			symbol_in_data = data["symbol"]
 		else:
 			symbol_in_data = symbol
-
-		# Various types of faulty POST...
+		
+		# Note that official SF handles POSTs that lack venue and stock/symbol (using the URL instead)
 		
 		if "venue" in data:
 			venue_in_data = data["venue"]
 		else:
 			venue_in_data = venue
 
+		# Various types of faulty POST...
+		
 		if venue_in_data != venue or symbol_in_data != symbol:
 			return URL_MISMATCH
 		
