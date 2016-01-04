@@ -297,22 +297,19 @@ def make_order(venue, symbol):
 		# Thanks to cite-reader for the following bug-fix:
 		# Match behavior of real Stockfighter: recognize both these forms
 		
-		symbol_in_data = None
 		if "stock" in data:
 			symbol_in_data = data["stock"]
 		elif "symbol" in data:
 			symbol_in_data = data["symbol"]
+		else:
+			symbol_in_data = symbol
 
 		# Various types of faulty POST...
-	
-		if symbol_in_data is None:
-			return MISSING_FIELD
 		
-		try:
+		if "venue" in data:
 			venue_in_data = data["venue"]
-			account = data["account"]		# Needed late for auth
-		except KeyError:
-			return MISSING_FIELD
+		else:
+			venue_in_data = venue
 
 		if venue_in_data != venue or symbol_in_data != symbol:
 			return URL_MISMATCH
@@ -323,6 +320,12 @@ def make_order(venue, symbol):
 			return BOOK_ERROR
 		
 		if auth:
+		
+			try:
+				account = data["account"]
+			except KeyError:
+				return MISSING_FIELD
+		
 			try:
 				apikey = api_key_from_headers(request.headers)
 			except NoApiKey:
