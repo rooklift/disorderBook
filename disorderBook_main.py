@@ -115,7 +115,7 @@ def orderbook(venue, symbol):
 	try:
 		create_book_if_needed(venue, symbol)
 	except TooManyBooks:
-		return 
+		return BOOK_ERROR
 
 	try:
 		ret = all_venues[venue][symbol].get_book()
