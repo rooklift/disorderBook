@@ -365,12 +365,18 @@ def scores(venue, symbol):
 		if currentprice is None:
 			return "<pre>No trading activity yet.</pre>"
 		
-		results = []
-		for account, pos in all_venues[venue][symbol].positions.items():
-			nav = pos.shares * currentprice + pos.cents
-			results.append("{:<15}  USD: ${:<12}  Shares:{:<12}  NAV: ${:<12}".format(account, pos.cents // 100, pos.shares, nav // 100))
+		all_data = []
 		
-		res_string = "\n".join(results)
+		for account, pos in all_venues[venue][symbol].positions.items():
+			all_data.append([account, pos.cents, pos.shares, pos.cents + pos.shares * currentprice])
+			
+		all_data = sorted(all_data, key = lambda x : x[3], reverse = True)
+		
+		result_lines = []
+		for datum in all_data:
+			result_lines.append("{:<15}  USD: ${:<12}  Shares:{:<12}  NAV: ${:<12}".format(datum[0], datum[1] // 100, datum[2], datum[3] // 100))
+		
+		res_string = "\n".join(result_lines)
 		
 		ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n\n{}</pre>".format(venue, symbol, currentprice / 100, res_string, book.current_timestamp())
 		
