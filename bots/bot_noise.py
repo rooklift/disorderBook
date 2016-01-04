@@ -9,10 +9,12 @@ def main():
 		with open("DEFAULT_STOCK.txt") as infile:
 			venue, symbol = infile.readline().split()
 	except:
-		venue, symbol = "BUYEX", "DOGS"
-
-	account = "NZ" + str(random.randint(0,999999999))		# "EXB123456"
-	sf.change_api_key("nokey")
+		venue, symbol = "TESTEX", "FOOBAR"
+	
+	account = "NZ" + str(random.randint(0,999999999))
+	# account = "NOISEBOTS"
+	
+	sf.change_api_key("unused")
 	
 	orderType = "limit"
 	all_orders = []
