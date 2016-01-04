@@ -359,7 +359,7 @@ def scores(venue, symbol):
 	try:
 	
 		if venue not in all_venues or symbol not in all_venues[venue]:
-			return "<pre>No such venue!</pre>"
+			return "<pre>No such venue/stock!</pre>"
 		
 		currentprice = all_venues[venue][symbol].last_trade_price
 		if currentprice is None:
@@ -392,12 +392,18 @@ def home():
 	return """
 	<pre>
 	
-	Unofficial Stockfighter server
-	By Amtiskaw (Fohristiwhirl on GitHub) and Medecau
-	With helpful help from cite-reader and DanielVF
+	disorderBook: unofficial Stockfighter server
+	https://github.com/fohristiwhirl/disorderBook
+	
+	By Amtiskaw (Fohristiwhirl on GitHub)
+	With help from cite-reader, Medecau and DanielVF
 	
 	Mad props to patio11 for the elegant fundamental design!
 	Also inspired by eu90h's Mockfighter
+	
+	
+	
+	"patio11 used go for a good reason" -- Medecau
 	</pre>
 	"""
 
