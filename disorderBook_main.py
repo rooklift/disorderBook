@@ -380,8 +380,11 @@ def scores(venue, symbol):
 		all_data = sorted(all_data, key = lambda x : x[3], reverse = True)
 		
 		result_lines = []
-		for datum in all_data:
-			result_lines.append("{:<15}  USD: ${:<12}  Shares:{:<12}  NAV: ${:<12}".format(datum[0], datum[1] // 100, datum[2], datum[3] // 100))
+		for datum in all_data:		# When in "serious" (authentication) mode, don't show shares and cents
+			if not auth:
+				result_lines.append("{:<15}  USD: ${:<12}  Shares:{:<12}  NAV: ${:<12}".format(datum[0], datum[1] // 100, datum[2], datum[3] // 100))
+			else:
+				result_lines.append("{:<15}  NAV: ${:<12}".format(datum[0], datum[3] // 100))
 		
 		res_string = "\n".join(result_lines)
 		
