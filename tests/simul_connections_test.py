@@ -8,7 +8,8 @@ import copy, inspect, json, requests, threading, time, queue, random
 _API_URL = "http://127.0.0.1:8000/ob/api/"
 _API_KEY = "exb123456"
 
-_extra_headers = {"X-Starfighter-Authorization" : _API_KEY}
+_api_cookie_text = "api_key={}".format(_API_KEY)
+_extra_headers = {"X-Starfighter-Authorization" : _API_KEY, "Cookie" : _api_cookie_text}
 
 
 PRINT_LOCK = threading.Lock()

@@ -6,7 +6,12 @@ _API_URL = "http://127.0.0.1:8000/ob/api/"
 
 _API_KEY = "exb123456"		# Needs a legit key if running on the official server
 
-_extra_headers = {"X-Starfighter-Authorization" : _API_KEY}
+_api_cookie_text = "api_key={}".format(_API_KEY)
+_extra_headers = {"X-Starfighter-Authorization" : _API_KEY, "Cookie" : _api_cookie_text}
+
+ACCOUNT = "THIRTY"
+VENUE = "SELLEX"
+SYMBOL = "CATS"
 
 SEED = 155176
 TEST_TIME = 30
@@ -171,9 +176,9 @@ def quote(venue, symbol, verbose = False):
 
 INFO = Order()
 
-INFO.account = "EXB123456"
-INFO.venue = "TESTEX"
-INFO.symbol = "FOOBAR"
+INFO.account = ACCOUNT
+INFO.venue = VENUE
+INFO.symbol = SYMBOL
 
 # Clear the book...
 
