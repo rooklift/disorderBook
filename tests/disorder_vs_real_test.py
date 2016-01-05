@@ -5,18 +5,45 @@
 import copy, inspect, json, requests, time, random
 
 
-_API_URL = "http://127.0.0.1:8000/ob/api/"
-# _API_URL = "https://api.stockfighter.io/ob/api/"
+API_URL_1 = "http://127.0.0.1:8000/ob/api/"
+API_KEY_1 = "unused"
 
-_API_KEY = "exb123456"		# Needs a legit key if running on the official server
+API_URL_2 = "https://api.stockfighter.io/ob/api/"
+API_KEY_2 = "fixme"				# Needs a legit key for official
 
-_extra_headers = {"X-Starfighter-Authorization" : _API_KEY}
+ACCOUNT_1 = "DISORDERTEST"
+VENUE_1 = "SELLEX"
+SYMBOL_1 = "CATS"
 
+ACCOUNT_2 = "EXB123456"
+VENUE_2 = "TESTEX"
+SYMBOL_2 = "FOOBAR"
 
 TEST_SIZE = 200
 SEED = 155176
 
+# ------------------------------------------------------------------------------------
+
+_API_URL = API_URL_1		# This is what's actually used by get_json_from_url()
+
+_api_cookie_text = "api_key={}".format(API_KEY_1)
+_extra_headers = {"X-Starfighter-Authorization" : API_KEY_1, "Cookie" : _api_cookie_text}
+
+def change_api_key(k):
+	global _api_cookie_text
+	global _extra_headers
+	
+	_api_cookie_text = "api_key={}".format(k)
+	_extra_headers = {"X-Starfighter-Authorization" : k, "Cookie" : _api_cookie_text}
+	
+def change_url(u):
+	global _API_URL
+	_API_URL = u
+
+
+
 random.seed(SEED)
+
 
 
 # --------------- necessary stuff that could be in its own file ------------------------------------------
@@ -170,26 +197,43 @@ def execute(order, verbose = False):
 def quote(venue, symbol, verbose = False):
 	return get_json_from_url(_API_URL + "venues/{}/stocks/{}/quote".format(venue, symbol), verbose = verbose)
 
+def set_from_account_1(order):
+	order.account = ACCOUNT_1
+	order.venue = VENUE_1
+	order.symbol = SYMBOL_1
+	change_api_key(API_KEY_1)
+	change_url(API_URL_1)
+
+def set_from_account_2(order):
+	order.account = ACCOUNT_2
+	order.venue = VENUE_2
+	order.symbol = SYMBOL_2
+	change_api_key(API_KEY_2)
+	change_url(API_URL_2)
 
 # ---------------------------------------------------------------------------------
 
 
 INFO = Order()
 
-INFO.account = "EXB123456"
-INFO.venue = "TESTEX"
-INFO.symbol = "FOOBAR"
-
 # Clear the book...
 
 INFO.qty = 999999
 INFO.orderType = "market"
 INFO.direction = "buy"
-INFO.price = 0
+INFO.price = 1
 
+set_from_account_1(INFO)
+execute(INFO)
+set_from_account_2(INFO)
 execute(INFO)
 
 INFO.direction = "sell"
+execute(INFO)
+
+set_from_account_1(INFO)
+execute(INFO)
+set_from_account_2(INFO)
 execute(INFO)
 
 
@@ -198,19 +242,46 @@ for n in range(TEST_SIZE):
 	INFO.qty = random.randint(1, 100)
 	INFO.direction = random.choice(["buy", "sell"])
 	INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
+	
+	set_from_account_1(INFO)
 	res = execute(INFO)
 	if n == 0:
-		first_id = res["id"]
+		first_id_1 = res["id"]
 	elif n == TEST_SIZE - 1:
-		last_id = res["id"]
-	print(n)
+		last_id_1 = res["id"]
+		
+	q1 = quote(INFO.venue, INFO.symbol)
+		
+	set_from_account_2(INFO)
+	res = execute(INFO)
+	if n == 0:
+		first_id_2 = res["id"]
+	elif n == TEST_SIZE - 1:
+		last_id_2 = res["id"]
+	
+	q2 = quote(INFO.venue, INFO.symbol)
+	
+	print(n, " ", end="")
+	
+	for field in ["lastSize", "ask", "bidDepth", "bidSize", "askSize", "last", "askDepth", "bid"]:
+		try:
+			if q1[field] != q2[field]:
+				print("{}: {} vs {}".format(field, q1[field], q2[field]))
+		except KeyError:
+			pass
+	print()
 
 print("TEST_SIZE =", TEST_SIZE)
 print("SEED =", SEED)
 
-quote = quote(INFO.venue, INFO.symbol, verbose = True)
+set_from_account_1(INFO)
+quote(INFO.venue, INFO.symbol, verbose = True)
+print("last - first == {} (expected {})".format(last_id_1 - first_id_1, TEST_SIZE - 1))
 
-print("last - first == {} (expected {})".format(last_id - first_id, TEST_SIZE - 1))
+set_from_account_2(INFO)
+quote(INFO.venue, INFO.symbol, verbose = True)
+print("last - first == {} (expected {})".format(last_id_1 - first_id_1, TEST_SIZE - 1))
+
 input()
 
 
