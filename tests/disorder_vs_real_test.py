@@ -21,7 +21,7 @@ VENUE_2 = "TESTEX"
 SYMBOL_2 = "FOOBAR"
 
 TEST_SIZE = 200
-SEED = 155176
+SEED = 155178
 
 # ------------------------------------------------------------------------------------
 
@@ -198,6 +198,9 @@ def execute(order, verbose = False):
 def quote(venue, symbol, verbose = False):
 	return get_json_from_url(_API_URL + "venues/{}/stocks/{}/quote".format(venue, symbol), verbose = verbose)
 
+def orderbook(venue, symbol, verbose = False):
+	return get_json_from_url(_API_URL + "venues/{}/stocks/{}".format(venue, symbol), verbose = verbose)
+
 def set_from_account_1(order):
 	order.account = ACCOUNT_1
 	order.venue = VENUE_1
@@ -217,26 +220,49 @@ def set_from_account_2(order):
 
 INFO = Order()
 
-# Clear the book...
 
-INFO.qty = 999999
-INFO.orderType = "market"
-INFO.direction = "buy"
-INFO.price = 1
+def clear_the_books():
+	global INFO
+	
+	INFO.qty = 999999
+	INFO.orderType = "market"
+	INFO.direction = "buy"
+	INFO.price = 1
 
-set_from_account_1(INFO)
-execute(INFO)
-set_from_account_2(INFO)
-execute(INFO)
+	set_from_account_1(INFO)
+	execute(INFO)
+	set_from_account_2(INFO)
+	execute(INFO)
 
-INFO.direction = "sell"
-execute(INFO)
+	INFO.direction = "sell"
 
-set_from_account_1(INFO)
-execute(INFO)
-set_from_account_2(INFO)
-execute(INFO)
+	set_from_account_1(INFO)
+	execute(INFO)
+	set_from_account_2(INFO)
+	execute(INFO)
 
+	# Set the last price and size...
+
+	INFO.orderType = "limit"
+	INFO.price = 5000
+	INFO.qty = 50
+	INFO.direction = "sell"
+
+	set_from_account_1(INFO)
+	execute(INFO)
+	set_from_account_2(INFO)
+	execute(INFO)
+
+	INFO.direction = "buy"
+
+	set_from_account_1(INFO)
+	execute(INFO)
+	set_from_account_2(INFO)
+	execute(INFO)
+
+
+
+clear_the_books()
 
 for n in range(TEST_SIZE):
 	INFO.price = random.randint(1, 5000)
@@ -245,26 +271,63 @@ for n in range(TEST_SIZE):
 	INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
 	
 	set_from_account_1(INFO)
-	res = execute(INFO)
+	res1 = execute(INFO)
+	id1 = res1["id"]
 	if n == 0:
-		first_id_1 = res["id"]
-	elif n == TEST_SIZE - 1:
-		last_id_1 = res["id"]
-		
+		first_id_1 = id1
+	if n == TEST_SIZE - 1:
+		last_id_1 = id1
 	q1 = quote(INFO.venue, INFO.symbol)
+	o1 = orderbook(INFO.venue, INFO.symbol)
 		
 	set_from_account_2(INFO)
-	res = execute(INFO)
+	res2 = execute(INFO)
+	id2 = res2["id"]
 	if n == 0:
-		first_id_2 = res["id"]
-	elif n == TEST_SIZE - 1:
-		last_id_2 = res["id"]
-	
+		first_id_2 = id2
+	if n == TEST_SIZE - 1:
+		last_id_2 = id2
 	q2 = quote(INFO.venue, INFO.symbol)
+	o2 = orderbook(INFO.venue, INFO.symbol)
 	
-	print(n, " ", end="")
+	print("IDs (adjusted, should match): {}, {} ----- {} {} @ {} ({})".format(id1 - first_id_1, id2 - first_id_2, INFO.direction, INFO.qty, INFO.price, INFO.orderType))
 	
-	for field in ["lastSize", "ask", "bidDepth", "bidSize", "askSize", "last", "askDepth", "bid"]:
+	bids_match = False
+	asks_match = False
+	if o1["bids"] == o2["bids"]:
+		bids_match = True
+	if o1["asks"] == o2["asks"]:
+		asks_match = True
+	if (not o1["bids"]) and (not o2["bids"]):
+		bids_match = True
+	if (not o1["asks"]) and (not o2["asks"]):
+		asks_match = True
+	
+	if bids_match and asks_match:
+		print("Books MATCH")
+	else:
+		print(o1["bids"], o1["asks"])
+		print(o2["bids"], o2["asks"])
+	
+	results_match = True
+	for field in ("direction", "originalQty", "price", "totalFilled", "qty", "open"):
+		if field not in res1:
+			print("{} missing from order 1".format(field))
+			print(res1)
+		if field not in res2:
+			print("{} missing from order 2".format(field))
+			print(res2)
+		try:
+			if res1[field] != res2[field]:
+				results_match = False
+				print("ORDER RESULT: {}: {} vs {}".format(field, res1[field], res2[field]))
+		except KeyError:
+			print("KeyError")
+	
+	if results_match:
+		print("Results MATCH")
+	
+	for field in ("ask", "bidDepth", "bidSize", "askSize", "last", "askDepth", "bid", "lastSize"):
 		try:
 			if q1[field] != q2[field]:
 				print("{}: {} vs {}".format(field, q1[field], q2[field]))
@@ -286,29 +349,4 @@ quote(INFO.venue, INFO.symbol, verbose = True)
 print("last - first == {} (expected {})".format(last_id_2 - first_id_2, TEST_SIZE - 1))
 
 input()
-
-
-''' Results from official: (on my machine, but due to seeding issues, may differ across machines)
-
-TEST_SIZE = 200
-SEED = 155176
-{
-  "ok": true,
-  "symbol": "FOOBAR",
-  "venue": "TESTEX",
-  "bid": 1742,
-  "ask": 2448,
-  "bidSize": 17,
-  "askSize": 21,
-  "bidDepth": 192,
-  "askDepth": 520,
-  "last": 1676,
-  "lastSize": 26,
-  "lastTrade": "2015-12-30T15:13:38.485833096Z",
-  "quoteTime": "2015-12-30T15:13:47.203555038Z"
-}
-last - first == 199 (expected 199)
-
-
-'''
 
