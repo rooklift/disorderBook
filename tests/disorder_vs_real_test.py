@@ -283,7 +283,7 @@ print()
 
 set_from_account_2(INFO)
 quote(INFO.venue, INFO.symbol, verbose = True)
-print("last - first == {} (expected {})".format(last_id_1 - first_id_1, TEST_SIZE - 1))
+print("last - first == {} (expected {})".format(last_id_2 - first_id_2, TEST_SIZE - 1))
 
 input()
 
