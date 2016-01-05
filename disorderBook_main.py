@@ -495,6 +495,13 @@ def main():
 		type = "str",
 		help = "File containing JSON dict of account names mapped to their API keys [default: none]")
 	opt_parser.set_defaults(accounts_file = "")
+
+	opt_parser.add_option(
+		"-p", "--port",
+		dest = "port",
+		type = "int",
+		help = "Port [default: %default]")
+	opt_parser.set_defaults(port = 8000)
 	
 	opts, args = opt_parser.parse_args()
 	
@@ -507,7 +514,7 @@ def main():
 	if not auth:
 		print(" -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
 	
-	run(host = "127.0.0.1", port = 8000)
+	run(host = "127.0.0.1", port = opts.port)
 	
 
 if __name__ == "__main__":
