@@ -322,9 +322,15 @@ class OrderBook ():
 			if direction == "buy":
 				if self.fok_can_buy(price = price, qty = qty):
 					self.run_order(order)
+				else:
+					order["open"] = False		# Since the order never enters the run_order() function
+					order["qty"] = 0			# we have to do this here
 			else:
 				if self.fok_can_sell(price = price, qty = qty):
 					self.run_order(order)
+				else:
+					order["open"] = False
+					order["qty"] = 0
 		
 		# Market orders are slightly tricky...
 		
@@ -340,7 +346,7 @@ class OrderBook ():
 			
 			self.run_order(order)
 			
-			order["price"] = actually_stated_price
+			order["price"] = 0			# This is the official behaviour for returning market orders
 		
 		return order
 
@@ -375,6 +381,9 @@ class OrderBook ():
 					bisect.insort(self.bids, incoming)
 				else:
 					bisect.insort(self.asks, incoming)
+		else:
+			incoming["open"] = False
+			incoming["qty"] = 0
 		
 		return incoming
 	
