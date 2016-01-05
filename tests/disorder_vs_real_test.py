@@ -273,10 +273,12 @@ for n in range(TEST_SIZE):
 
 print("TEST_SIZE =", TEST_SIZE)
 print("SEED =", SEED)
+print()
 
 set_from_account_1(INFO)
 quote(INFO.venue, INFO.symbol, verbose = True)
 print("last - first == {} (expected {})".format(last_id_1 - first_id_1, TEST_SIZE - 1))
+print()
 
 set_from_account_2(INFO)
 quote(INFO.venue, INFO.symbol, verbose = True)
