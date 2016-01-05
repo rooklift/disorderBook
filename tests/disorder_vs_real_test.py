@@ -1,5 +1,6 @@
-# Usage: Execute against both the real test server and the local server. Compare results.
-# Check that nobody else used the real test server for the duration (via order IDs)
+# This program fires off multiple randomly generated orders at 2 different servers, and compares
+# the quotes that result. One of these servers could be the official test server, though other
+# people might place orders on it at the same time.
 
 
 import copy, inspect, json, requests, time, random
