@@ -464,7 +464,7 @@ def create_auth_records():
 
 
 def main():
-	global opts; global args
+	global opts
 	
 	opt_parser = optparse.OptionParser()
 	
@@ -473,7 +473,7 @@ def main():
 		dest = "maxbooks",
 		type = "int",
 		help = "Maximum number of books (exchange/ticker combos) [default: %default]")
-	opt_parser.set_defaults(maxbooks = 10)
+	opt_parser.set_defaults(maxbooks = 100)
 	
 	opt_parser.add_option(
 		"-v", "--venue",
@@ -503,7 +503,7 @@ def main():
 		help = "Port [default: %default]")
 	opt_parser.set_defaults(port = 8000)
 	
-	opts, args = opt_parser.parse_args()
+	opts, __ = opt_parser.parse_args()
 	
 	create_book_if_needed(opts.default_venue, opts.default_symbol)
 	

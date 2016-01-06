@@ -335,7 +335,6 @@ class OrderBook ():
 		# Market orders are slightly tricky...
 		
 		elif orderType == "market":
-			actually_stated_price = price
 			
 			if direction == "buy":
 				if self.asks:									# We use the cheap trick of temporarily setting
@@ -371,7 +370,7 @@ class OrderBook ():
 					if incoming["qty"] == 0:
 						break
 				else:
-					break
+					break		# Taking advantage of the sortedness of the book's lists
 		
 		self.cleanup_closed_orders()
 		
