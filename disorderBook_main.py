@@ -416,22 +416,25 @@ def scores(venue, symbol):
         book_obj = all_venues[venue][symbol]
         
         for account, pos in book_obj.positions.items():
-            all_data.append([account, pos.cents, pos.shares, pos.cents + pos.shares * currentprice])
+            all_data.append([account, pos.cents, pos.shares, pos.minimum, pos.maximum, pos.cents + pos.shares * currentprice])
             
-        all_data = sorted(all_data, key = lambda x : x[3], reverse = True)
+        all_data = sorted(all_data, key = lambda x : x[5], reverse = True)
+        
+        table_header = "Account         USD         Shares     Pos.min    Pos.max    NAV"
         
         result_lines = []
         for datum in all_data:        # When in "serious" (authentication) mode, don't show shares and cents
             if not auth:
-                result_lines.append("{:<15}  USD: ${:<12}  Shares:{:<12}  NAV: ${:<12}".format(datum[0], datum[1] // 100, datum[2], datum[3] // 100))
+                result_lines.append("{:<15} ${:<10} {:<10} {:<10} {:<10} ${:<12}".format(
+                                    datum[0], datum[1] // 100, datum[2], datum[3], datum[4], datum[5] // 100))
             else:
-                result_lines.append("{:<15}  NAV: ${:<12}".format(datum[0], datum[3] // 100))
+                result_lines.append("{:<15} [hidden]    [hidden]   {:<10} {:<10} ${:<12}".format(
+                                    datum[0], datum[3], datum[4], datum[5] // 100))
         
         res_string = "\n".join(result_lines)
         
-        ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n\nStart time:    {}\nCurrent time:  {}</pre>".format(
-                    venue, symbol, currentprice / 100, res_string, book_obj.starttime, disorderBook_book.current_timestamp()
-                )
+        ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n{}\n\nStart time:    {}\nCurrent time:  {}</pre>".format(
+                    venue, symbol, currentprice / 100, table_header, res_string, book_obj.starttime, disorderBook_book.current_timestamp())
         
         return ret
     

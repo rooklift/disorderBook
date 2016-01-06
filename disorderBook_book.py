@@ -10,9 +10,32 @@ def current_timestamp():
 
 class Position():
     def __init__(self):
-        self.shares = 0
         self.cents = 0
+        
+        self._shares = 0
+        self._min = 0
+        self._max = 0
     
+    @property
+    def shares(self):
+        return self._shares
+    
+    @shares.setter
+    def shares(self, shares):
+        self._shares = shares
+        if shares < self._min:
+            self._min = shares
+        if shares > self._max:
+            self._max = shares
+    
+    @property
+    def minimum(self):
+        return self._min
+    
+    @property
+    def maximum(self):
+        return self._max
+
 
 class Order (dict):
     def __init__(self, **kwargs):
