@@ -446,15 +446,12 @@ def home():
 
 def create_auth_records():
     global auth
-    global opts
 
     with open(opts.accounts_file) as infile:
         auth = json.load(infile)
 
 
-def main():
-    global opts
-
+if __name__ == "__main__":
     opt_parser = optparse.OptionParser()
 
     opt_parser.add_option(
@@ -504,7 +501,3 @@ def main():
         print(" -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
 
     run(host="127.0.0.1", port=opts.port)
-
-
-if __name__ == "__main__":
-    main()
