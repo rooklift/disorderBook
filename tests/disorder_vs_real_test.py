@@ -312,17 +312,17 @@ for n in range(TEST_SIZE):
 	results_match = True
 	for field in ("direction", "originalQty", "price", "totalFilled", "qty", "open"):
 		if field not in res1:
-			print("{} missing from order 1".format(field))
+			print("{} missing from RESULT of order 1".format(field))
 			print(res1)
 		if field not in res2:
-			print("{} missing from order 2".format(field))
+			print("{} missing from RESULT of order 2".format(field))
 			print(res2)
 		try:
 			if res1[field] != res2[field]:
 				results_match = False
 				print("ORDER RESULT: {}: {} vs {}".format(field, res1[field], res2[field]))
 		except KeyError:
-			print("KeyError")
+			pass
 	
 	if results_match:
 		print("Results MATCH")
@@ -330,7 +330,7 @@ for n in range(TEST_SIZE):
 	for field in ("ask", "bidDepth", "bidSize", "askSize", "last", "askDepth", "bid", "lastSize"):
 		try:
 			if q1[field] != q2[field]:
-				print("{}: {} vs {}".format(field, q1[field], q2[field]))
+				print("QUOTE: {}: {} vs {}".format(field, q1[field], q2[field]))
 		except KeyError:
 			pass
 	print()
