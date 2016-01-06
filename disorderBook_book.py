@@ -1,4 +1,6 @@
-import bisect, datetime, json
+import bisect
+import datetime
+import json
 
 
 def current_timestamp():
