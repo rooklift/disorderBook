@@ -1,12 +1,21 @@
-# This is a better version of the frontend using the Bottle library
-# Made by Medecau and Fohristiwhirl
+# An implementation of a Stockfighter server in Python 3
+# https://github.com/fohristiwhirl/disorderBook
+#
+# By Stockfighter player Amtiskaw (a.k.a. Fohristiwhirl)
+# With help from Medecau and cite-reader
+#
+# License: BSD-2-clause (https://opensource.org/licenses/BSD-2-Clause)
 
-import json, optparse
-import disorderBook_book
+
+import json
+import optparse
+
 try:
-    from bottle import route, request, response, run
+    from bottle import request, response, route, run
 except ImportError:
-    from bottle_0_12_9 import route, request, response, run     # copy in our repo
+    from bottle_0_12_9 import request, response, route, run     # copy in our repo
+
+import disorderBook_book
 
 
 all_venues = dict()         # dict: venue string ---> dict: stock string ---> OrderBook objects
