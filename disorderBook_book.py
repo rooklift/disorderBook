@@ -115,19 +115,22 @@ class OrderBook ():
         self.last_trade_size = None
         self.positions = dict()
 
-
     def account_from_order_id(self, id):
         try:
             return self.id_lookup_table[id]["account"]
         except KeyError:
             return None
 
-
-    def cleanup_closed_orders(self):        # This is cute but is it fast?... If improving this later, remember
-        self.bids = [bid for bid in self.bids if bid["open"]]        # that cancels can call this, meaning that
-        self.asks = [ask for ask in self.asks if ask["open"]]        # closed orders could be anywhere.
+    def cleanup_closed_bids(self):
+        self.bids = [bid for bid in self.bids if bid["open"]]
+        
+    def cleanup_closed_asks(self):
+        self.asks = [ask for ask in self.asks if ask["open"]]
+        
+    def cleanup_closed_orders(self):
+        self.cleanup_closed_bids()
+        self.cleanup_closed_asks()
     
-
     def get_book(self):
         ret = dict()
         ret["ok"] = True
@@ -387,7 +390,8 @@ class OrderBook ():
                     if incoming["qty"] == 0:
                         break
                 else:
-                    break        # Taking advantage of the sortedness of the book's lists
+                    break               # Taking advantage of the sortedness of the book's lists
+            self.cleanup_closed_bids()
         else:
             for standing in self.asks:
                 if standing["price"] <= incomingprice:
@@ -395,10 +399,9 @@ class OrderBook ():
                     if incoming["qty"] == 0:
                         break
                 else:
-                    break        # Taking advantage of the sortedness of the book's lists
-        
-        self.cleanup_closed_orders()
-        
+                    break               # Taking advantage of the sortedness of the book's lists
+            self.cleanup_closed_asks()
+
         if incoming["orderType"] == "limit":        # Only limit orders rest on the book
             if incoming["open"]:
                 if incoming["direction"] == "buy":
