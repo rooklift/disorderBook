@@ -88,7 +88,7 @@ def heartbeat():
 def venue_list():
     ret = dict()
     ret["ok"] = True
-    ret["venues"] = [{"name": v + " Exchange", "venue": v, "state" : "open"} for v in all_venues]
+    ret["venues"] = [{"name": v + " Exchange", "venue": v, "state": "open"} for v in all_venues]
     return ret
 
 
@@ -105,10 +105,10 @@ def venue_heartbeat(venue):
 @route("/ob/api/venues/<venue>/stocks", "GET")
 def stocklist(venue):
     if venue in all_venues:
-        return {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]}
+        return {"ok": True, "symbols": [{"symbol": symbol, "name": symbol + " Inc"} for symbol in all_venues[venue]]}
     else:
         response.status = 404
-        return {"ok" : False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
+        return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")

@@ -108,8 +108,8 @@ class OrderBook ():
         ret["ok"] = True
         ret["venue"] = self.venue
         ret["symbol"] = self.symbol
-        ret["bids"] = [{"price" : order["price"], "qty": order["qty"], "isBuy": True} for order in self.bids]
-        ret["asks"] = [{"price" : order["price"], "qty": order["qty"], "isBuy": False} for order in self.asks]
+        ret["bids"] = [{"price": order["price"], "qty": order["qty"], "isBuy": True} for order in self.bids]
+        ret["asks"] = [{"price": order["price"], "qty": order["qty"], "isBuy": False} for order in self.asks]
         ret["ts"] = current_timestamp()
         return ret
     
@@ -120,9 +120,9 @@ class OrderBook ():
     
     def get_all_orders(self, account):
         if account in self.account_order_lists:
-            return {"ok" : True, "venue" : self.venue, "orders" : self.account_order_lists[account]}
+            return {"ok": True, "venue": self.venue, "orders": self.account_order_lists[account]}
         else:
-            return {"ok" : True, "venue" : self.venue, "orders" : []}
+            return {"ok": True, "venue": self.venue, "orders": []}
     
 
     def get_quote(self):
