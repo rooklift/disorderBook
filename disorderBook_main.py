@@ -103,10 +103,10 @@ def venue_heartbeat(venue):
 @route("/ob/api/venues/<venue>/stocks", "GET")
 def stocklist(venue):
     if venue in all_venues:
-        return {"ok" : True, "symbols" : [{"symbol" : symbol, "name" : symbol + " Inc"} for symbol in all_venues[venue]]}
+        return {"ok": True, "symbols": [{"symbol": symbol, "name": symbol + " Inc"} for symbol in all_venues[venue]]}
     else:
         response.status = 404
-        return {"ok" : False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
+        return {"ok": False, "error": "Venue {} does not exist (create it by using it)".format(venue)}
 
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
@@ -407,7 +407,7 @@ def scores(venue, symbol):
         for account, pos in book_obj.positions.items():
             all_data.append([account, pos.cents, pos.shares, pos.cents + pos.shares * currentprice])
 
-        all_data = sorted(all_data, key = lambda x : x[3], reverse = True)
+        all_data = sorted(all_data, key=lambda x: x[3], reverse=True)
 
         result_lines = []
         for datum in all_data:      # When in "serious" (authentication) mode, don't show shares and cents
@@ -419,8 +419,7 @@ def scores(venue, symbol):
         res_string = "\n".join(result_lines)
 
         ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n\nStart time:    {}\nCurrent time:  {}</pre>".format(
-                    venue, symbol, currentprice / 100, res_string, book_obj.starttime, disorderBook_book.current_timestamp()
-                )
+              venue, symbol, currentprice / 100, res_string, book_obj.starttime, disorderBook_book.current_timestamp())
 
         return ret
 
@@ -468,38 +467,38 @@ def main():
 
     opt_parser.add_option(
         "-b", "--maxbooks",
-        dest = "maxbooks",
-        type = "int",
-        help = "Maximum number of books (exchange/ticker combos) [default: %default]")
-    opt_parser.set_defaults(maxbooks = 100)
+        dest="maxbooks",
+        type="int",
+        help="Maximum number of books (exchange/ticker combos) [default: %default]")
+    opt_parser.set_defaults(maxbooks=100)
 
     opt_parser.add_option(
         "-v", "--venue",
-        dest = "default_venue",
-        type = "str",
-        help = "Default venue; always exists [default: %default]")
-    opt_parser.set_defaults(default_venue = "TESTEX")
+        dest="default_venue",
+        type="str",
+        help="Default venue; always exists [default: %default]")
+    opt_parser.set_defaults(default_venue="TESTEX")
 
     opt_parser.add_option(
         "-s", "--symbol", "--stock",
-        dest = "default_symbol",
-        type = "str",
-        help = "Default symbol; always exists on default venue [default: %default]")
-    opt_parser.set_defaults(default_symbol = "FOOBAR")
+        dest="default_symbol",
+        type="str",
+        help="Default symbol; always exists on default venue [default: %default]")
+    opt_parser.set_defaults(default_symbol="FOOBAR")
 
     opt_parser.add_option(
         "-a", "--accounts",
-        dest = "accounts_file",
-        type = "str",
-        help = "File containing JSON dict of account names mapped to their API keys [default: none]")
-    opt_parser.set_defaults(accounts_file = "")
+        dest="accounts_file",
+        type="str",
+        help="File containing JSON dict of account names mapped to their API keys [default: none]")
+    opt_parser.set_defaults(accounts_file="")
 
     opt_parser.add_option(
         "-p", "--port",
-        dest = "port",
-        type = "int",
-        help = "Port [default: %default]")
-    opt_parser.set_defaults(port = 8000)
+        dest="port",
+        type="int",
+        help="Port [default: %default]")
+    opt_parser.set_defaults(port=8000)
 
     opts, __ = opt_parser.parse_args()
 
@@ -512,7 +511,7 @@ def main():
     if not auth:
         print(" -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
 
-    run(host = "127.0.0.1", port = opts.port)
+    run(host="127.0.0.1", port=opts.port)
 
 
 if __name__ == "__main__":

@@ -92,45 +92,38 @@ class OrderBook ():
         self.last_trade_size = None
         self.positions = dict()
 
-
     def account_from_order_id(self, id):
         try:
             return self.id_lookup_table[id]["account"]
         except KeyError:
             return None
 
-
     def cleanup_closed_orders(self):        # This is cute but is it fast?... If improving this later, remember
         self.bids = [bid for bid in self.bids if bid["open"]]       # that cancels can call this, meaning that
         self.asks = [ask for ask in self.asks if ask["open"]]       # closed orders could be anywhere.
-
 
     def get_book(self):
         ret = dict()
         ret["ok"] = True
         ret["venue"] = self.venue
         ret["symbol"] = self.symbol
-        ret["bids"] = [{"price" : order["price"], "qty": order["qty"], "isBuy": True} for order in self.bids]
-        ret["asks"] = [{"price" : order["price"], "qty": order["qty"], "isBuy": False} for order in self.asks]
+        ret["bids"] = [{"price": order["price"], "qty": order["qty"], "isBuy": True} for order in self.bids]
+        ret["asks"] = [{"price": order["price"], "qty": order["qty"], "isBuy": False} for order in self.asks]
         ret["ts"] = current_timestamp()
         return ret
-
 
     def get_status(self, id):
         return self.id_lookup_table[id]
 
-
     def get_all_orders(self, account):
         if account in self.account_order_lists:
-            return {"ok" : True, "venue" : self.venue, "orders" : self.account_order_lists[account]}
+            return {"ok": True, "venue": self.venue, "orders": self.account_order_lists[account]}
         else:
-            return {"ok" : True, "venue" : self.venue, "orders" : []}
-
+            return {"ok": True, "venue": self.venue, "orders": []}
 
     def get_quote(self):
         self.set_quote()
         return self.quote
-
 
     def set_quote(self):                    # Could optimise (?) by changing everything every
         self.quote["ok"] = True             # fill, but is that really faster in practice?
@@ -164,7 +157,6 @@ class OrderBook ():
 
         self.quote["quoteTime"] = current_timestamp()
 
-
     def bid_size(self):
         if len(self.bids) == 0:
             return 0
@@ -176,7 +168,6 @@ class OrderBook ():
             else:
                 break
         return ret
-
 
     def ask_size(self):
         if len(self.asks) == 0:
@@ -190,20 +181,17 @@ class OrderBook ():
                 break
         return ret
 
-
     def bid_depth(self):            # Could optimise by just storing this whenever it changes
         ret = 0
         for order in self.bids:
             ret += order["qty"]
         return ret
 
-
     def ask_depth(self):            # Could optimise by just storing this whenever it changes
         ret = 0
         for order in self.asks:
             ret += order["qty"]
         return ret
-
 
     def fok_can_buy(self, price, qty):
         avail = 0
@@ -220,7 +208,6 @@ class OrderBook ():
         else:
             return False
 
-
     def fok_can_sell(self, price, qty):
         avail = 0
         for standing in self.bids:
@@ -236,7 +223,6 @@ class OrderBook ():
         else:
             return False
 
-
     def cancel_order(self, id):
         order = self.id_lookup_table[id]
         if order["open"]:
@@ -244,7 +230,6 @@ class OrderBook ():
             order["open"] = False
             self.cleanup_closed_orders()
         return order
-
 
     def parse_order(self, data):
         # We now assume symbol and venue are correct for this book. Caller's responsibility.
@@ -290,22 +275,20 @@ class OrderBook ():
         id = self.next_id
         self.next_id += 1
 
-        order = Order(
-                ok          = True,
-                venue       = self.venue,
-                symbol      = self.symbol,
-                direction   = direction,
-                originalQty = qty,
-                qty         = qty,
-                price       = price,
-                orderType   = orderType,
-                id          = id,
-                account     = account,
-                ts          = current_timestamp(),
-                fills       = list(),
-                totalFilled = 0,
-                open        = True
-                )
+        order = Order(ok=True,
+                      venue=self.venue,
+                      symbol=self.symbol,
+                      direction=direction,
+                      originalQty=qty,
+                      qty=qty,
+                      price=price,
+                      orderType=orderType,
+                      id=id,
+                      account=account,
+                      ts=current_timestamp(),
+                      fills=list(),
+                      totalFilled=0,
+                      open=True)
 
         self.id_lookup_table[id] = order            # So we can find it for status/cancel
 
@@ -322,13 +305,13 @@ class OrderBook ():
 
         elif orderType == "fill-or-kill":
             if direction == "buy":
-                if self.fok_can_buy(price = price, qty = qty):
+                if self.fok_can_buy(price=price, qty=qty):
                     self.run_order(order)
                 else:
                     order["open"] = False       # Since the order never enters the run_order() function
                     order["qty"] = 0            # we have to do this here
             else:
-                if self.fok_can_sell(price = price, qty = qty):
+                if self.fok_can_sell(price=price, qty=qty):
                     self.run_order(order)
                 else:
                     order["open"] = False
@@ -351,7 +334,6 @@ class OrderBook ():
 
         return order
 
-
     def run_order(self, incoming):
 
         incomingprice = incoming["price"]
@@ -360,7 +342,7 @@ class OrderBook ():
         if incoming["direction"] == "sell":
             for standing in self.bids:
                 if standing["price"] >= incomingprice:
-                    self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
+                    self.order_cross(standing=standing, incoming=incoming, timestamp=timestamp)
                     if incoming["qty"] == 0:
                         break
                 else:
@@ -368,7 +350,7 @@ class OrderBook ():
         else:
             for standing in self.asks:
                 if standing["price"] <= incomingprice:
-                    self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
+                    self.order_cross(standing=standing, incoming=incoming, timestamp=timestamp)
                     if incoming["qty"] == 0:
                         break
                 else:
@@ -388,7 +370,6 @@ class OrderBook ():
 
         return incoming
 
-
     def order_cross(self, *, standing, incoming, timestamp):        # Force named args to not get it wrong
         quantity = min(standing["qty"], incoming["qty"])
         standing["qty"] -= quantity
@@ -402,7 +383,7 @@ class OrderBook ():
         self.last_trade_price = price
         self.last_trade_size = quantity
 
-        fill = dict(price = price, qty = quantity, ts = timestamp)
+        fill = dict(price=price, qty=quantity, ts=timestamp)
 
         for o in standing, incoming:
             o["fills"].append(fill)
