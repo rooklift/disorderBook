@@ -4,14 +4,14 @@ import copy, inspect, json, requests, time, random
 _API_URL = "http://127.0.0.1:8000/ob/api/"
 # _API_URL = "https://api.stockfighter.io/ob/api/"
 
-_API_KEY = "exb123456"		# Needs a legit key if running on the official server
+_API_KEY = "exb123456"
 
 _api_cookie_text = "api_key={}".format(_API_KEY)
 _extra_headers = {"X-Starfighter-Authorization" : _API_KEY, "Cookie" : _api_cookie_text}
 
-ACCOUNT = "THIRTY"
-VENUE = "SELLEX"
-SYMBOL = "CATS"
+ACCOUNT = "EXB123456"
+VENUE = "TESTEX"
+SYMBOL = "FOOBAR"
 
 SEED = 155176
 TEST_TIME = 30

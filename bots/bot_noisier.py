@@ -1,4 +1,4 @@
-import json, random, time
+import json, random, threading, time
 import stockfighter_minimal as sf
 
 account = "NOISEBOTS"
@@ -7,10 +7,12 @@ venue, symbol = "TESTEX", "FOOBAR"
 sf.set_web_url("http://127.0.0.1:8000/ob/api/")
 sf.change_api_key("noisekey")
 
-def main():
-    global account
-    global venue
-    global symbol
+def make_bots():
+    for n in range(6):
+        newthread = threading.Thread(target = noise, args=(account, venue, symbol))
+        newthread.start()
+
+def noise(account, venue, symbol):
     
     orderType = "limit"
     all_orders = []
@@ -48,7 +50,6 @@ def main():
         if len(all_orders) > 10:
             id = all_orders.pop(0)
             sf.cancel(venue, symbol, id, verbose = True)
-
-
+        
 if __name__ == "__main__":
-    main()
+    make_bots()

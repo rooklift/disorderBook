@@ -1,5 +1,5 @@
 {
-	"TESTACCOUNT": "testing",
-	"FAKEACCOUNT": "faking",
+	"BLSHBOTS": "blshkey",
+	"NOISEBOTS": "noisekey",
 	"EXB123456": "exb123456"
 }
