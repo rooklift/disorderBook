@@ -44,4 +44,3 @@ If you want either of these features, put it behind a reverse proxy like NGINX.
 * Medecau
 * DanielVF
 * eu90h
-* Ntouchable
