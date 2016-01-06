@@ -335,7 +335,6 @@ class OrderBook ():
         return order
 
     def run_order(self, incoming):
-
         incomingprice = incoming["price"]
         timestamp = current_timestamp()
 

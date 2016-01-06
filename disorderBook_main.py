@@ -111,7 +111,6 @@ def stocklist(venue):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>", "GET")
 def orderbook(venue, symbol):
-
     try:
         create_book_if_needed(venue, symbol)
     except TooManyBooks:
@@ -129,7 +128,6 @@ def orderbook(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/quote", "GET")
 def quote(venue, symbol):
-
     try:
         create_book_if_needed(venue, symbol)
     except TooManyBooks:
@@ -147,7 +145,6 @@ def quote(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
 def status(venue, symbol, id):
-
     id = int(id)
 
     try:
@@ -189,7 +186,6 @@ def status(venue, symbol, id):
 
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
 def status_all_orders(venue, account):
-
     try:
 
         if auth:
@@ -226,7 +222,6 @@ def status_all_orders(venue, account):
 
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
 def status_all_orders_one_stock(venue, account, symbol):
-
     try:
         create_book_if_needed(venue, symbol)
     except TooManyBooks:
@@ -262,7 +257,6 @@ def status_all_orders_one_stock(venue, account, symbol):
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "DELETE")
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>/cancel", "POST")
 def cancel(venue, symbol, id):
-
     id = int(id)
 
     try:
@@ -304,7 +298,6 @@ def cancel(venue, symbol, id):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders", "POST")
 def make_order(venue, symbol):
-
     try:
         data = str(request.body.read(), encoding="utf-8")
         data = json.loads(data)
@@ -389,7 +382,6 @@ def make_order(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/scores", "GET")
 def scores(venue, symbol):
-
     try:
 
         if venue not in all_venues or symbol not in all_venues[venue]:
