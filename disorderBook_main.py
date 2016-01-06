@@ -4,7 +4,7 @@
 # By Stockfighter player Amtiskaw (a.k.a. Fohristiwhirl)
 # With help from Medecau and cite-reader
 #
-# License: BSD-2-clause (https://opensource.org/licenses/BSD-2-Clause)
+# License: BSD-2-Clause (https://opensource.org/licenses/BSD-2-Clause)
 
 
 import json
