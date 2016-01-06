@@ -291,21 +291,21 @@ class OrderBook ():
         self.next_id += 1
         
         order = Order(
-                ok           = True,
-                venue        = self.venue,
-                symbol       = self.symbol,
-                direction    = direction,
-                originalQty  = qty,
-                qty          = qty,
-                price        = price,
-                orderType    = orderType,
-                id           = id,
-                account      = account,
-                ts           = current_timestamp(),
-                fills        = list(),
-                totalFilled  = 0,
-                open         = True
-                )
+                         ok = True,
+                      venue = self.venue,
+                     symbol = self.symbol,
+                  direction = direction,
+                originalQty = qty,
+                        qty = qty,
+                      price = price,
+                  orderType = orderType,
+                         id = id,
+                    account = account,
+                         ts = current_timestamp(),
+                      fills = list(),
+                totalFilled = 0,
+                       open = True
+                            )
         
         self.id_lookup_table[id] = order            # So we can find it for status/cancel
         
