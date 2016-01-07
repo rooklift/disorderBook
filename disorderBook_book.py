@@ -115,11 +115,13 @@ class OrderBook ():
         self.last_trade_size = None
         self.positions = dict()
 
+
     def account_from_order_id(self, id):
         try:
             return self.id_lookup_table[id]["account"]
         except KeyError:
             return None
+
 
     def cleanup_closed_bids(self):
         self.bids = [bid for bid in self.bids if bid["open"]]
@@ -130,7 +132,8 @@ class OrderBook ():
     def cleanup_closed_orders(self):
         self.cleanup_closed_bids()
         self.cleanup_closed_asks()
-    
+
+
     def get_book(self):
         ret = dict()
         ret["ok"] = True
@@ -294,12 +297,9 @@ class OrderBook ():
         qty = data["qty"]
         direction = data["direction"]
         
-        # Prices on market orders are irrelevant, so allow broken ones:
+        # Official SF sets price to 0 on market orders:
         if orderType == "market":
-            if not isinstance(price, int):
-                price = 0
-            elif price < 0:
-                price = 0
+            price = 0
 
         price = int(price)    # Could raise TypeError
         qty = int(qty)        # Could raise TypeError
@@ -339,9 +339,9 @@ class OrderBook ():
             self.account_order_lists[account] = list()
         self.account_order_lists[account].append(order)        # So we can list all an account's orders
             
-        # Limit and IOC orders are easy...
+        # Limit, Market, and IOC orders are easy...
         
-        if orderType == "limit" or orderType == "immediate-or-cancel":
+        if orderType in ("limit", "immediate-or-cancel", "market"):
             self.run_order(order)
             
         # FOK orders are slightly tricky...
@@ -350,30 +350,15 @@ class OrderBook ():
             if direction == "buy":
                 if self.fok_can_buy(price = price, qty = qty):
                     self.run_order(order)
-                else:
-                    order["open"] = False       # Since the order never enters the run_order() function
-                    order["qty"] = 0            # we have to do this here
             else:
                 if self.fok_can_sell(price = price, qty = qty):
                     self.run_order(order)
-                else:
-                    order["open"] = False
-                    order["qty"] = 0
         
-        # Market orders are slightly tricky...
+        # Limit orders may have been placed on the book, the rest may need to be closed...
         
-        elif orderType == "market":
-            
-            if direction == "buy":
-                if self.asks:                                    # We use the cheap trick of temporarily setting
-                    order["price"] = self.asks[-1]["price"]      # the order's price to the worst one on the book
-            else:
-                if self.bids:
-                    order["price"] = self.bids[-1]["price"]
-            
-            self.run_order(order)
-            
-            order["price"] = 0            # This is the official behaviour for returning market orders
+        if order["orderType"] != "limit":
+            order["qty"] = 0
+            order["open"] = False
         
         return order
 
@@ -385,7 +370,7 @@ class OrderBook ():
     
         if incoming["direction"] == "sell":
             for standing in self.bids:
-                if standing["price"] >= incomingprice:
+                if standing["price"] >= incomingprice or incoming["orderType"] == "market":
                     self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
                     if incoming["qty"] == 0:
                         break
@@ -394,7 +379,7 @@ class OrderBook ():
             self.cleanup_closed_bids()
         else:
             for standing in self.asks:
-                if standing["price"] <= incomingprice:
+                if standing["price"] <= incomingprice or incoming["orderType"] == "market":
                     self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
                     if incoming["qty"] == 0:
                         break
@@ -408,9 +393,6 @@ class OrderBook ():
                     bisect.insort(self.bids, incoming)
                 else:
                     bisect.insort(self.asks, incoming)
-        else:
-            incoming["open"] = False
-            incoming["qty"] = 0
         
         return incoming
     
