@@ -44,3 +44,7 @@ If you want either of these features, put it behind a reverse proxy like NGINX.
 * Medecau
 * DanielVF
 * eu90h
+
+## Experimental
+
+An experimental version with the backend in C is [being worked on](https://github.com/fohristiwhirl/disorderCook). Sadly, this doesn't lead to the sort of speedups you might hope (the bottleneck seems to be the frontend).
