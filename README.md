@@ -10,7 +10,7 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 ## Requirements
 
-With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; a copy of the library is included in the repo (and will be used if needed), though you could also install it with through `pip install bottle`.
+With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; a copy of the library is included in the repo (and will be used if needed), though you could also install it with `pip install bottle`.
 
 You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
 
