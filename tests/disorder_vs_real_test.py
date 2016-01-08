@@ -87,8 +87,8 @@ clear_the_books()
 
 
 for n in range(TEST_SIZE):
-    INFO.price = random.randint(1, 5000)
-    INFO.qty = random.randint(1, 100)
+    INFO.price = random.randint(1, 20)
+    INFO.qty = random.randint(1, 20)
     INFO.direction = random.choice(["buy", "sell"])
     INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
     
