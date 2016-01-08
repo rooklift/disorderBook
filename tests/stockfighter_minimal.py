@@ -145,8 +145,8 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
         if superverbose:
             print(raw.status_code)
             print(raw.headers)
-        # print(raw.text)
-        # print("RESULT WAS JSON BUT NOT A DICT.")
+        print(raw.text)
+        print("RESULT WAS JSON BUT NOT A DICT.")
         return None
     
     # The reply was a valid JSON dictionary...

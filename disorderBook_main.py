@@ -5,6 +5,11 @@
 # With help from Medecau and cite-reader
 #
 # License: BSD-2-Clause (https://opensource.org/licenses/BSD-2-Clause)
+#
+# ---------------------------------------------------------------------------
+#
+# Tests show that it is the front end (i.e. dealing with sending and receiving
+# http, and so on) that takes up most (90%) of the application's time.
 
 
 import json

@@ -141,6 +141,16 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
     
     # The reply was valid JSON...
     
+    if not isinstance(result, dict):
+        if superverbose:
+            print(raw.status_code)
+            print(raw.headers)
+        print(raw.text)
+        print("RESULT WAS JSON BUT NOT A DICT.")
+        return None
+        
+    # The reply was a valid JSON dictionary...
+    
     if require_ok:
         if "ok" not in result:
             print(raw.text)
