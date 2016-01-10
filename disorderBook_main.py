@@ -41,6 +41,7 @@ MISSING_FIELD = {"ok": False, "error": "Incoming POST was missing required field
 URL_MISMATCH = {"ok": False, "error": "Incoming POST data disagreed with request URL"}
 BAD_TYPE = {"ok": False, "error": "A value in the POST had the wrong type"}
 BAD_VALUE = {"ok": False, "error": "Illegal value (usually a non-positive number)"}
+DISABLED = {"ok": False, "error": "Disabled or not enabled. (See command line options)"}
 
 # ----------------------------------------------------------------------------------------
 
@@ -206,6 +207,11 @@ def status(venue, symbol, id):
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
 def status_all_orders(venue, account):
     
+    # This can return a stupid amount of data and is disabled by default...
+    if not opts.extra:
+        response.status = 403
+        return DISABLED
+    
     try:
     
         if auth:
@@ -242,6 +248,11 @@ def status_all_orders(venue, account):
 
 @route("/ob/api/venues/<venue>/accounts/<account>/stocks/<symbol>/orders", "GET")
 def status_all_orders_one_stock(venue, account, symbol):
+
+    # This can return a stupid amount of data and is disabled by default...
+    if not opts.extra:
+        response.status = 403
+        return DISABLED
 
     try:
         create_book_if_needed(venue, symbol)
@@ -519,6 +530,13 @@ def main():
         type = "int",
         help = "Port [default: %default]")
     opt_parser.set_defaults(port = 8000)
+    
+    opt_parser.add_option(
+        "-e", "--extra",
+        dest   = "extra",
+        action = "store_true",
+        help   = "Enable commands that can return excessive responses (all orders on venue)")
+    opt_parser.set_defaults(extra = False)
     
     opts, __ = opt_parser.parse_args()
     
