@@ -23,7 +23,7 @@ VENUE_2 = "TESTEX"
 SYMBOL_2 = "FOOBAR"
 
 TEST_SIZE = 3000
-SEED = 314742
+SEED = 314749
 
 
 random.seed(SEED)
@@ -94,7 +94,7 @@ for n in range(TEST_SIZE):
     INFO.price = random.randint(1, 100)
     INFO.qty = random.randint(1, 100)
     INFO.direction = random.choice(["buy", "sell"])
-    INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel"])    #, "fill-or-kill"])
+    INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
     
     set_from_account_1(INFO)
     res1 = sf.execute(INFO)
@@ -157,9 +157,17 @@ for n in range(TEST_SIZE):
         print()
     else:
         discrepancies += 1
+    
+    # Randomly cancel a slightly old order with p = 33%
+    
+    if random.choice([True, False, False]):
+        set_from_account_1(INFO)
+        sf.cancel(INFO.venue, INFO.symbol, id1 - 5)
+        set_from_account_2(INFO)
+        sf.cancel(INFO.venue, INFO.symbol, id2 - 5)
 
     print()
-    time.sleep(0.1)
+    # time.sleep(0.1)
 
 print("TEST_SIZE =", TEST_SIZE)
 print("SEED =", SEED)
