@@ -3,14 +3,16 @@
 # people might place orders on it at the same time.
 
 import random
+import time
+
 import stockfighter_minimal as sf
 
 
-API_URL_1 = "http://127.0.0.1:8000/ob/api/"
+API_URL_1 = "http://127.0.0.1:8005/ob/api/"
 API_KEY_1 = "unused"
 
-API_URL_2 = "https://api.stockfighter.io/ob/api/"
-API_KEY_2 = "fixme"                # Needs a legit key for official
+API_URL_2 = "http://127.0.0.1:8000/ob/api/"
+API_KEY_2 = "fixme"
 
 ACCOUNT_1 = "DISORDERTEST"
 VENUE_1 = "SELLEX"
@@ -20,8 +22,8 @@ ACCOUNT_2 = "EXB123456"
 VENUE_2 = "TESTEX"
 SYMBOL_2 = "FOOBAR"
 
-TEST_SIZE = 200
-SEED = 155178
+TEST_SIZE = 3000
+SEED = 314749
 
 
 random.seed(SEED)
@@ -85,10 +87,12 @@ def clear_the_books():
 
 clear_the_books()
 
+discrepancies = 0
+
 
 for n in range(TEST_SIZE):
-    INFO.price = random.randint(1, 20)
-    INFO.qty = random.randint(1, 20)
+    INFO.price = random.randint(1, 100)
+    INFO.qty = random.randint(1, 100)
     INFO.direction = random.choice(["buy", "sell"])
     INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
     
@@ -128,6 +132,7 @@ for n in range(TEST_SIZE):
     if bids_match and asks_match:
         print("Books MATCH")
     else:
+        discrepancies += 1
         print(o1["bids"], o1["asks"])
         print(o2["bids"], o2["asks"])
     
@@ -144,7 +149,8 @@ for n in range(TEST_SIZE):
                 results_match = False
                 print("ORDER RESULT: {}: {} vs {}".format(field, res1[field], res2[field]))
         except KeyError:
-            pass
+            if field in res1 or field in res2:
+                discrepancies += 1
     
     if results_match:
         print("Results MATCH", end = " --- ")
@@ -152,18 +158,38 @@ for n in range(TEST_SIZE):
         for fill in fills:  
             print({"price" : fill["price"], "qty" : fill["qty"]}, end = "")
         print()
+    else:
+        discrepancies += 1
     
+    quotes_match = True
     for field in ("ask", "bidDepth", "bidSize", "askSize", "last", "askDepth", "bid", "lastSize"):
         try:
             if q1[field] != q2[field]:
                 print("QUOTE: {}: {} vs {}".format(field, q1[field], q2[field]))
+                discrepancies += 1
+                quotes_match = False
         except KeyError:
-            pass
+            if field in q1 or field in q2:
+                discrepancies += 1
+    
+    if quotes_match:
+        print("Quotes MATCH")
+    
+    # Randomly cancel a slightly old order with p = 33%
+    
+    if random.choice([True, False, False]):
+        set_from_account_1(INFO)
+        sf.cancel(INFO.venue, INFO.symbol, id1 - 5)
+        set_from_account_2(INFO)
+        sf.cancel(INFO.venue, INFO.symbol, id2 - 5)
+
     print()
+    # time.sleep(0.1)
 
 print("TEST_SIZE =", TEST_SIZE)
 print("SEED =", SEED)
 print()
+print("Discrepancies:", discrepancies)
 
 input()
 
