@@ -208,7 +208,7 @@ def status(venue, symbol, id):
 def status_all_orders(venue, account):
     
     # This can return a stupid amount of data and is disabled by default...
-    if not opts.extra:
+    if not opts.excess:
         response.status = 403
         return DISABLED
     
@@ -250,7 +250,7 @@ def status_all_orders(venue, account):
 def status_all_orders_one_stock(venue, account, symbol):
 
     # This can return a stupid amount of data and is disabled by default...
-    if not opts.extra:
+    if not opts.excess:
         response.status = 403
         return DISABLED
 
@@ -532,11 +532,11 @@ def main():
     opt_parser.set_defaults(port = 8000)
     
     opt_parser.add_option(
-        "-e", "--extra",
-        dest   = "extra",
+        "-e", "--extra", "--excess",
+        dest   = "excess",
         action = "store_true",
         help   = "Enable commands that can return excessive responses (all orders on venue)")
-    opt_parser.set_defaults(extra = False)
+    opt_parser.set_defaults(excess = False)
     
     opts, __ = opt_parser.parse_args()
     
