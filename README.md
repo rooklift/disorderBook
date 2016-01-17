@@ -18,6 +18,10 @@ You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/d
 
 There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_main.py -a accounts.json` (then authentication will work in [the same way](https://starfighter.readme.io/docs/api-authentication-authorization) as on the official servers, via "X-Starfighter-Authorization" headers).
 
+## WebSockets
+
+Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They are disabled by default; enable with the `--websockets` command line option.
+
 ## Features
 
 * Your bots can use whatever accounts, venues, and symbols they like
@@ -25,9 +29,8 @@ There is no authentication by default. If you want authentication, edit `account
 * Two stupid bots are included - you must start them (or many copies) manually
 * Scores can be accessed at &nbsp; **/ob/api/venues/&lt;venue&gt;/stocks/&lt;symbol&gt;/scores** &nbsp; (accessing this with your bots is cheating though)
 
-## Missing features / issues
+## Issues / poor design choices
 
-* No websockets yet, or maybe ever
 * Everything persists forever; we will *eventually* run out of RAM or the CPU will get bogged down
 
 ## Non-features
