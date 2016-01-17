@@ -8,12 +8,6 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
-## Requirements
-
-With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library for request handling; a copy of the library is included in the repo (and will be used if needed), though you could also install it with `pip install bottle`.
-
-You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
-
 ## WebSockets
 
 Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library (included in the repo), we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option. Connect in via &nbsp; **ws://127.0.0.1:8001/ob/api/ws/** &nbsp; and note we use ws, not wss.
