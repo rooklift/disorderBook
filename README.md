@@ -14,13 +14,13 @@ With the help of Medecau, we now use the [Bottle](http://bottlepy.org/) library 
 
 You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) to do your work in.
 
-## Authentication
-
-There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_main.py -a accounts.json` (then authentication will work in [the same way](https://starfighter.readme.io/docs/api-authentication-authorization) as on the official servers, via "X-Starfighter-Authorization" headers).
-
 ## WebSockets
 
 Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option. Connect in via &nbsp; **ws://127.0.0.1:8001/ob/api/ws/** &nbsp; and note we use ws, not wss.
+
+## Authentication
+
+There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_main.py -a accounts.json` (then authentication will work in [the same way](https://starfighter.readme.io/docs/api-authentication-authorization) as on the official servers, via "X-Starfighter-Authorization" headers).
 
 ## Features
 
