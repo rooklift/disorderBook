@@ -4,7 +4,7 @@ Written by Stockfighter user Amtiskaw (a.k.a. Fohristiwhirl on GitHub)
 
 ## Usage
 
-* Run `python3 disorderBook_main.py` &nbsp; (also requires `disorderBook_book.py` to be present)
+* Run `python3 disorderBook_main.py`
 * Connect your trading bots to &nbsp; **http://127.0.0.1:8000/ob/api/** &nbsp; instead of the normal URL
 * Don't use https
 
