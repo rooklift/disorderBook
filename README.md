@@ -16,7 +16,7 @@ You might want to [set up a virtualenv](http://docs.python-guide.org/en/latest/d
 
 ## WebSockets
 
-Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option. Connect in via &nbsp; **ws://127.0.0.1:8001/ob/api/ws/** &nbsp; and note we use ws, not wss.
+Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library (included in the repo), we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option. Connect in via &nbsp; **ws://127.0.0.1:8001/ob/api/ws/** &nbsp; and note we use ws, not wss.
 
 ## Authentication
 
