@@ -20,7 +20,7 @@ There is no authentication by default. If you want authentication, edit `account
 
 ## WebSockets
 
-Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They are disabled by default; enable with the `--websockets` command line option.
+Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option.
 
 ## Features
 
