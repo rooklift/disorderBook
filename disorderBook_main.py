@@ -14,6 +14,7 @@
 
 import json
 import optparse
+import threading
 
 try:
     from bottle import request, response, route, run
@@ -21,6 +22,7 @@ except ImportError:
     from bottle_0_12_9 import request, response, route, run     # copy in our repo
 
 import disorderBook_book
+import disorderBook_ws
 
 
 all_venues = dict()         # dict: venue string ---> dict: stock string ---> OrderBook objects
@@ -74,7 +76,7 @@ def create_book_if_needed(venue, symbol):
         if opts.maxbooks > 0:
             if current_book_count + 1 > opts.maxbooks:
                 raise TooManyBooks
-        all_venues[venue][symbol] = disorderBook_book.OrderBook(venue, symbol)
+        all_venues[venue][symbol] = disorderBook_book.OrderBook(venue, symbol, opts.websockets)
         current_book_count += 1
 
 
@@ -538,6 +540,13 @@ def main():
         help   = "Enable commands that can return excessive responses (all orders on venue)")
     opt_parser.set_defaults(excess = False)
     
+    opt_parser.add_option(
+        "-w", "--ws", "--websocket", "--websockets",
+        dest   = "websockets",
+        action = "store_true",
+        help   = "Enable websockets")
+    opt_parser.set_defaults(websockets = False)
+    
     opts, __ = opt_parser.parse_args()
     
     create_book_if_needed(opts.default_venue, opts.default_symbol)
@@ -548,6 +557,10 @@ def main():
     print("disorderBook starting up...\n")
     if not auth:
         print(" -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
+    
+    if opts.websockets:
+        ws_thread = threading.Thread(target = disorderBook_ws.start_websockets)
+        ws_thread.start()
     
     run(host = "127.0.0.1", port = opts.port)
     

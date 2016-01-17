@@ -1,6 +1,30 @@
+# TODO: now that websockets are working, we really must adjust the
+# quote on the fly rather than generating it every time it's needed.
+
+
 import bisect
 import datetime
 import json
+
+import disorderBook_ws
+
+
+EXECUTION_TEMPLATE = '''
+{{
+  "ok": true,
+  "account": "{}",
+  "venue": "{}",
+  "symbol": "{}",
+  "order": {},
+  "standingId": {},
+  "incomingId": {},
+  "price": {},
+  "filled": {},
+  "filledAt": "{}",
+  "standingComplete": {},
+  "incomingComplete": {}
+}}
+'''
 
 
 def current_timestamp():
@@ -100,9 +124,10 @@ class Order (dict):
 # Incoming orders can then just iterate through the list until they're finished crossing.
 
 class OrderBook ():
-    def __init__(self, venue, symbol):
+    def __init__(self, venue, symbol, websockets_flag):
         self.venue = str(venue)
         self.symbol = str(symbol)
+        self.websockets_flag = websockets_flag
         self.starttime = current_timestamp()
         self.bids = []
         self.asks = []
@@ -268,11 +293,22 @@ class OrderBook ():
     
     def cancel_order(self, id):
         order = self.id_lookup_table[id]
+        
         if order["open"]:
             order["qty"] = 0
             order["open"] = False
             self.cleanup_closed_orders()
+            
+        if self.websockets_flag:
+            self.create_ticker_message()
+
         return order
+    
+    
+    def create_ticker_message(self):
+        msg = '{"ok": true, "quote": ' + json.dumps(self.get_quote()) + '}'
+        ticker_msg_obj = disorderBook_ws.WebsocketMessage(account = "NONE", venue = self.venue, symbol = self.symbol, msg = msg)
+        disorderBook_ws.ticker_messages.put(ticker_msg_obj)
     
     
     def parse_order(self, data):
@@ -394,6 +430,9 @@ class OrderBook ():
                 else:
                     bisect.insort(self.asks, incoming)
         
+        if self.websockets_flag:
+            self.create_ticker_message()
+        
         return incoming
     
     
@@ -440,3 +479,23 @@ class OrderBook ():
             s_pos.cents += quantity * price
             i_pos.shares += quantity
             i_pos.cents -= quantity * price
+        
+        # And the following is for the executions websocket:
+        
+        if self.websockets_flag:
+        
+            standing_execution_msg = EXECUTION_TEMPLATE.format(
+                    standing["account"], self.venue, self.symbol, json.dumps(standing),
+                    standing["id"], incoming["id"], price, quantity, timestamp,
+                    "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
+
+            incoming_execution_msg = EXECUTION_TEMPLATE.format(
+                    incoming["account"], self.venue, self.symbol, json.dumps(incoming),
+                    standing["id"], incoming["id"], price, quantity, timestamp,
+                    "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
+
+            standing_msg_obj = disorderBook_ws.WebsocketMessage(account = standing["account"], venue = self.venue, symbol = self.symbol, msg = standing_execution_msg)
+            disorderBook_ws.execution_messages.put(standing_msg_obj)
+            
+            incoming_msg_obj = disorderBook_ws.WebsocketMessage(account = incoming["account"], venue = self.venue, symbol = self.symbol, msg = incoming_execution_msg)
+            disorderBook_ws.execution_messages.put(incoming_msg_obj)
