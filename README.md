@@ -20,7 +20,7 @@ There is no authentication by default. If you want authentication, edit `account
 
 ## WebSockets
 
-Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option.
+Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocket-server) library, we now have WebSockets. They cause a bit of a performance hit and are disabled by default; enable with the `--websockets` command line option. Connect in via &nbsp; **ws://127.0.0.1:8001/ob/api/ws/** &nbsp; and note we use ws, not wss.
 
 ## Features
 
