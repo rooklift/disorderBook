@@ -14,7 +14,7 @@ Thanks to the [SimpleWebSocketServer](https://github.com/dpallot/simple-websocke
 
 ## Authentication
 
-There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and run `python3 disorderBook_main.py -a accounts.json` (then authentication will work in [the same way](https://starfighter.readme.io/docs/api-authentication-authorization) as on the official servers, via "X-Starfighter-Authorization" headers).
+There is no authentication by default. If you want authentication, edit `accounts.json` to contain a list of valid users and their API keys and use the command line option `-a accounts.json` (then authentication will work in [the same way](https://starfighter.readme.io/docs/api-authentication-authorization) as on the official servers, via "X-Starfighter-Authorization" headers).
 
 ## Other features
 
