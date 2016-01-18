@@ -23,7 +23,7 @@ VENUE_2 = "TESTEX"
 SYMBOL_2 = "FOOBAR"
 
 TEST_SIZE = 3000
-SEED = 314749
+SEED = 314752
 
 
 random.seed(SEED)
@@ -162,7 +162,7 @@ for n in range(TEST_SIZE):
         discrepancies += 1
     
     quotes_match = True
-    for field in ("ask", "bidDepth", "bidSize", "askSize", "last", "askDepth", "bid", "lastSize"):
+    for field in ("ask", "askSize", "askDepth", "bid", "bidSize", "bidDepth", "last", "lastSize"):
         try:
             if q1[field] != q2[field]:
                 print("QUOTE: {}: {} vs {}".format(field, q1[field], q2[field]))
@@ -179,9 +179,11 @@ for n in range(TEST_SIZE):
     
     if random.choice([True, False, False]):
         set_from_account_1(INFO)
-        sf.cancel(INFO.venue, INFO.symbol, id1 - 5)
+        c1 = sf.cancel(INFO.venue, INFO.symbol, id1 - 5)
         set_from_account_2(INFO)
-        sf.cancel(INFO.venue, INFO.symbol, id2 - 5)
+        c2 = sf.cancel(INFO.venue, INFO.symbol, id2 - 5)
+        
+        print("\nIssued a cancel.")
 
     print()
     # time.sleep(0.1)
