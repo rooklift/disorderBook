@@ -425,8 +425,9 @@ def scores(venue, symbol):
             response.status = 404
             return "<pre>No such venue/stock!</pre>"
         
-        currentprice = all_venues[venue][symbol].last_trade_price
-        if currentprice is None:
+        try:
+            currentprice = all_venues[venue][symbol].quote["last"]
+        except KeyError:
             return "<pre>No trading activity yet.</pre>"
         
         all_data = []
