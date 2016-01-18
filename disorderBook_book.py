@@ -1,12 +1,8 @@
-# TODO: now that websockets are working, we really must adjust the
-# quote on the fly rather than generating it every time it's needed.
-
-
 import bisect
 import datetime
 import json
 
-import disorderBook_ws
+from disorderBook_ws import WebsocketMessage, WS_Messages, TICKER, EXECUTION
 
 
 EXECUTION_TEMPLATE = '''
@@ -312,8 +308,8 @@ class OrderBook ():
     
     def create_ticker_message(self):
         msg = '{"ok": true, "quote": ' + json.dumps(self.quote) + '}'
-        ticker_msg_obj = disorderBook_ws.WebsocketMessage(account = "NONE", venue = self.venue, symbol = self.symbol, msg = msg)
-        disorderBook_ws.ticker_messages.put(ticker_msg_obj)
+        ticker_msg_obj = WebsocketMessage(account = "NONE", venue = self.venue, symbol = self.symbol, msgtype = TICKER, msg = msg)
+        WS_Messages.put(ticker_msg_obj)
     
     
     def parse_order(self, data):
@@ -563,10 +559,21 @@ class OrderBook ():
                     standing["id"], incoming["id"], price, quantity, timestamp,
                     "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
 
-            standing_msg_obj = disorderBook_ws.WebsocketMessage(account = standing["account"], venue = self.venue, symbol = self.symbol, msg = standing_execution_msg)
-            incoming_msg_obj = disorderBook_ws.WebsocketMessage(account = incoming["account"], venue = self.venue, symbol = self.symbol, msg = incoming_execution_msg)
+            standing_msg_obj = WebsocketMessage(
+                                    account = standing["account"],
+                                    venue = self.venue,
+                                    symbol = self.symbol,
+                                    msgtype = EXECUTION,
+                                    msg = standing_execution_msg)
+                                            
+            incoming_msg_obj = WebsocketMessage(
+                                    account = incoming["account"],
+                                    venue = self.venue,
+                                    symbol = self.symbol,
+                                    msgtype = EXECUTION,
+                                    msg = incoming_execution_msg)
             
-            disorderBook_ws.execution_messages.put(standing_msg_obj)
-            disorderBook_ws.execution_messages.put(incoming_msg_obj)
+            WS_Messages.put(standing_msg_obj)
+            WS_Messages.put(incoming_msg_obj)
         
         return (price, quantity)
