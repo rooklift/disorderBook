@@ -495,7 +495,7 @@ class OrderBook ():
                     "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
 
             standing_msg_obj = disorderBook_ws.WebsocketMessage(account = standing["account"], venue = self.venue, symbol = self.symbol, msg = standing_execution_msg)
-            disorderBook_ws.execution_messages.put(standing_msg_obj)
-            
             incoming_msg_obj = disorderBook_ws.WebsocketMessage(account = incoming["account"], venue = self.venue, symbol = self.symbol, msg = incoming_execution_msg)
+            
+            disorderBook_ws.execution_messages.put(standing_msg_obj)
             disorderBook_ws.execution_messages.put(incoming_msg_obj)

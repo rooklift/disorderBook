@@ -546,6 +546,13 @@ def main():
         action = "store_true",
         help   = "Enable websockets")
     opt_parser.set_defaults(websockets = False)
+
+    opt_parser.add_option(
+        "--wsport", "--ws_port",
+        dest = "ws_port",
+        type = "int",
+        help = "WebSocket Port [default: %default]")
+    opt_parser.set_defaults(ws_port = 8001)
     
     opts, __ = opt_parser.parse_args()
     
@@ -554,12 +561,15 @@ def main():
     if opts.accounts_file:
         create_auth_records()
     
-    print("disorderBook starting up...\n")
+    print("disorderBook starting up on port {}".format(opts.port))
+    if opts.websockets:
+        print("WebSockets on port {}".format(opts.ws_port))
+    
     if not auth:
-        print(" -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
+        print("\n -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
     
     if opts.websockets:
-        ws_thread = threading.Thread(target = disorderBook_ws.start_websockets)
+        ws_thread = threading.Thread(target = disorderBook_ws.start_websockets, args = (opts.ws_port, ))
         ws_thread.start()
     
     run(host = "127.0.0.1", port = opts.port)

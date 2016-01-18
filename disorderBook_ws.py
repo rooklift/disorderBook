@@ -25,7 +25,7 @@ class ConnectHandler(swss.WebSocket):
 
     def handleConnected(self):
         try:
-            self.account, self.venue, self.symbol = re.search("\/ws\/(\S+)\/venues\/(\S+)\/tickertape\/stocks\/(\S+)", str(self.headerbuffer, encoding = "utf-8")).group(1,2,3)
+            self.account, self.venue, self.symbol = re.search("/ws/(\S+)/venues/(\S+)/tickertape/stocks/(\S+)", str(self.headerbuffer, encoding = "utf-8")).group(1,2,3)
             assert(self.account and self.venue and self.symbol)
             self.websocket_type = TICKER
             with ticker_clients_lock:
@@ -35,7 +35,7 @@ class ConnectHandler(swss.WebSocket):
             pass
             
         try:
-            self.account, self.venue = re.search("\/ws\/(\S+)\/venues\/(\S+)\/tickertape", str(self.headerbuffer, encoding = "utf-8")).group(1,2)
+            self.account, self.venue = re.search("/ws/(\S+)/venues/(\S+)/tickertape", str(self.headerbuffer, encoding = "utf-8")).group(1,2)
             assert(self.account and self.venue)
             self.symbol = None
             self.websocket_type = TICKER
@@ -46,7 +46,7 @@ class ConnectHandler(swss.WebSocket):
             pass
         
         try:
-            self.account, self.venue, self.symbol = re.search("\/ws\/(\S+)\/venues\/(\S+)\/executions\/stocks\/(\S+)", str(self.headerbuffer, encoding = "utf-8")).group(1,2,3)
+            self.account, self.venue, self.symbol = re.search("/ws/(\S+)/venues/(\S+)/executions/stocks/(\S+)", str(self.headerbuffer, encoding = "utf-8")).group(1,2,3)
             assert(self.account and self.venue and self.symbol)
             self.websocket_type = EXECUTIONS
             with execution_clients_lock:
@@ -56,7 +56,7 @@ class ConnectHandler(swss.WebSocket):
             pass
         
         try:
-            self.account, self.venue = re.search("\/ws\/(\S+)\/venues\/(\S+)\/executions\/stocks\/(\S+)", str(self.headerbuffer, encoding = "utf-8")).group(1,2)
+            self.account, self.venue = re.search("/ws/(\S+)/venues/(\S+)/executions", str(self.headerbuffer, encoding = "utf-8")).group(1,2)
             assert(self.account and self.venue)
             self.symbol = None
             self.websocket_type = EXECUTIONS
@@ -80,11 +80,11 @@ class ConnectHandler(swss.WebSocket):
             pass
 
 
-def start_websockets():
+def start_websockets(ws_port):
     threading.Thread(target = send_ticker_messages).start()
     threading.Thread(target = send_execution_messages).start()
     
-    server = swss.SimpleWebSocketServer('localhost', 8001, ConnectHandler, selectInterval = 0.1)
+    server = swss.SimpleWebSocketServer('127.0.0.1', ws_port, ConnectHandler, selectInterval = 0.1)
     server.serveforever()
 
 
