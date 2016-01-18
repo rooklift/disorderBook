@@ -135,10 +135,9 @@ class OrderBook ():
         self.account_order_lists = dict()        # account name ---> list of order objects
         self.next_id = 0
         self.quote = dict()
-        self.last_trade_time = None
-        self.last_trade_price = None
-        self.last_trade_size = None
         self.positions = dict()
+        
+        self.init_quote()
 
 
     def account_from_order_id(self, id):
@@ -181,40 +180,20 @@ class OrderBook ():
             return {"ok": True, "venue": self.venue, "orders": []}
     
 
-    def get_quote(self):
-        self.set_quote()
+    def get_quote(self):    # Used by the frontend for historical reasons
         return self.quote
     
 
-    def set_quote(self):                       # Could optimise (?) by changing everything every
-        self.quote["ok"] = True                # fill, but is that really faster in practice?
+    def init_quote(self):
+        self.quote["ok"] = True
         self.quote["venue"] = self.venue
         self.quote["symbol"] = self.symbol
         
-        if self.bids:
-            self.quote["bidDepth"] = self.bid_depth()
-            self.quote["bidSize"] = self.bid_size()
-            self.quote["bid"] = self.bids[0]["price"]
-        else:
-            self.quote["bidDepth"] = 0
-            self.quote["bidSize"] = 0
-            if "bid" in self.quote:
-                self.quote.pop("bid")
+        self.quote["bidDepth"] = 0
+        self.quote["bidSize"] = 0
         
-        if self.asks:
-            self.quote["askDepth"] = self.ask_depth()
-            self.quote["askSize"] = self.ask_size()
-            self.quote["ask"] = self.asks[0]["price"]
-        else:
-            self.quote["askDepth"] = 0
-            self.quote["askSize"] = 0
-            if "ask" in self.quote:
-                self.quote.pop("ask")
-        
-        if self.last_trade_price is not None:
-            self.quote["last"] = self.last_trade_price
-            self.quote["lastSize"] = self.last_trade_size
-            self.quote["lastTrade"] = self.last_trade_time
+        self.quote["askDepth"] = 0
+        self.quote["askSize"] = 0
         
         self.quote["quoteTime"] = current_timestamp()
 
@@ -242,20 +221,6 @@ class OrderBook ():
                 ret += order["qty"]
             else:
                 break
-        return ret
-
-        
-    def bid_depth(self):            # Could optimise by just storing this whenever it changes
-        ret = 0
-        for order in self.bids:
-            ret += order["qty"]
-        return ret
-
-    
-    def ask_depth(self):            # Could optimise by just storing this whenever it changes
-        ret = 0
-        for order in self.asks:
-            ret += order["qty"]
         return ret
 
 
@@ -295,9 +260,49 @@ class OrderBook ():
         order = self.id_lookup_table[id]
         
         if order["open"]:
+        
+            qty_outstanding = order["qty"]
+        
             order["qty"] = 0
             order["open"] = False
             self.cleanup_closed_orders()
+            
+            # Fix the quote...
+            
+            self.quote["quoteTime"] = current_timestamp()
+            
+            if order["direction"] == "buy":
+                if self.bids:
+                    self.quote["bidDepth"] -= qty_outstanding
+                    
+                    bestprice = self.bids[0]["price"]
+                    
+                    if order["price"] == bestprice:
+                        self.quote["bidSize"] -= qty_outstanding
+                    elif order["price"] > bestprice:                # Best order was cancelled
+                        self.quote["bidSize"] = self.bid_size()
+                        self.quote["bid"] = self.bids[0]["price"]
+                else:
+                    self.quote["bidDepth"] = 0
+                    self.quote["bidSize"] = 0
+                    if "bid" in self.quote:
+                        self.quote.pop("bid")
+            else:
+                if self.asks:
+                    self.quote["askDepth"] -= qty_outstanding
+                    
+                    bestprice = self.asks[0]["price"]
+                    
+                    if order["price"] == bestprice:
+                        self.quote["askSize"] -= qty_outstanding
+                    elif order["price"] < bestprice:                # Best order was cancelled
+                        self.quote["askSize"] = self.ask_size()
+                        self.quote["ask"] = self.asks[0]["price"]
+                else:
+                    self.quote["askDepth"] = 0
+                    self.quote["askSize"] = 0
+                    if "ask" in self.quote:
+                        self.quote.pop("ask")
             
         if self.websockets_flag:
             self.create_ticker_message()
@@ -306,7 +311,7 @@ class OrderBook ():
     
     
     def create_ticker_message(self):
-        msg = '{"ok": true, "quote": ' + json.dumps(self.get_quote()) + '}'
+        msg = '{"ok": true, "quote": ' + json.dumps(self.quote) + '}'
         ticker_msg_obj = disorderBook_ws.WebsocketMessage(account = "NONE", venue = self.venue, symbol = self.symbol, msg = msg)
         disorderBook_ws.ticker_messages.put(ticker_msg_obj)
     
@@ -403,11 +408,14 @@ class OrderBook ():
     
         incomingprice = incoming["price"]
         timestamp = current_timestamp()
+        
+        lastprice = 0
+        lastqty = 0
     
         if incoming["direction"] == "sell":
             for standing in self.bids:
                 if standing["price"] >= incomingprice or incoming["orderType"] == "market":
-                    self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
+                    lastprice, lastqty = self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
                     if incoming["qty"] == 0:
                         break
                 else:
@@ -416,20 +424,85 @@ class OrderBook ():
         else:
             for standing in self.asks:
                 if standing["price"] <= incomingprice or incoming["orderType"] == "market":
-                    self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
+                    lastprice, lastqty = self.order_cross(standing = standing, incoming = incoming, timestamp = timestamp)
                     if incoming["qty"] == 0:
                         break
                 else:
                     break               # Taking advantage of the sortedness of the book's lists
             self.cleanup_closed_asks()
 
-        if incoming["orderType"] == "limit":        # Only limit orders rest on the book
+        # Limit orders rest on the book (also must adjust quote for their half of the book)....
+            
+        if incoming["orderType"] == "limit":
             if incoming["open"]:
                 if incoming["direction"] == "buy":
+                
+                    if self.bids:
+                        old_bestprice = self.bids[0]["price"]
+                    else:
+                        old_bestprice = None
+                
                     bisect.insort(self.bids, incoming)
+                    
+                    self.quote["bidDepth"] += incoming["qty"]
+                    
+                    if incoming["price"] == old_bestprice:
+                        self.quote["bidSize"] += incoming["qty"]
+                        
+                    elif old_bestprice is None or incoming["price"] > old_bestprice:        # New order is best
+                        self.quote["bidSize"] = incoming["qty"]
+                        self.quote["bid"] = incoming["price"]
+                        
                 else:
+                
+                    if self.asks:
+                        old_bestprice = self.asks[0]["price"]
+                    else:
+                        old_bestprice = None
+                        
                     bisect.insort(self.asks, incoming)
+                    
+                    self.quote["askDepth"] += incoming["qty"]
+                    
+                    if incoming["price"] == old_bestprice:
+                        self.quote["askSize"] += incoming["qty"]
+                        
+                    elif old_bestprice is None or incoming["price"] < old_bestprice:        # New order is best
+                        self.quote["askSize"] = incoming["qty"]
+                        self.quote["ask"] = incoming["price"]
         
+        self.quote["quoteTime"] = timestamp         # Always do this
+        
+        # Check if there were any crosses; if so we need to do more quote setting...
+        
+        if incoming["totalFilled"]:
+            if incoming["direction"] == "sell":
+                if self.bids:
+                    self.quote["bid"] = self.bids[0]["price"]
+                    self.quote["bidSize"] = self.bid_size()
+                    self.quote["bidDepth"] -= incoming["totalFilled"]
+                else:
+                    if "bid" in self.quote:
+                        self.quote.pop("bid")
+                    self.quote["bidSize"] = 0
+                    self.quote["bidDepth"] = 0
+            else:
+                if self.asks:
+                    self.quote["ask"] = self.asks[0]["price"]
+                    self.quote["askSize"] = self.ask_size()
+                    self.quote["askDepth"] -= incoming["totalFilled"]
+                else:
+                    if "ask" in self.quote:
+                        self.quote.pop("ask")
+                    self.quote["askSize"] = 0
+                    self.quote["askDepth"] = 0
+            
+            self.quote["last"] = lastprice
+            self.quote["lastSize"] = lastqty
+            self.quote["lastTrade"] = timestamp
+
+        # And fire off a websocket message...
+            
         if self.websockets_flag:
             self.create_ticker_message()
         
@@ -444,10 +517,6 @@ class OrderBook ():
         incoming["totalFilled"] += quantity
         
         price = standing["price"]
-        
-        self.last_trade_time = timestamp
-        self.last_trade_price = price
-        self.last_trade_size = quantity
         
         fill = dict(price = price, qty = quantity, ts = timestamp)
         
@@ -499,3 +568,5 @@ class OrderBook ():
             
             disorderBook_ws.execution_messages.put(standing_msg_obj)
             disorderBook_ws.execution_messages.put(incoming_msg_obj)
+        
+        return (price, quantity)
