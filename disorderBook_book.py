@@ -505,7 +505,62 @@ class OrderBook ():
         return incoming
     
     
-    def order_cross(self, *, standing, incoming, timestamp):        # Force named args to not get it wrong
+    def update_scores_from_cross(self, standing, incoming, quantity, price):
+        s_account = standing["account"]
+        i_account = incoming["account"]
+        
+        if s_account not in self.positions:
+            self.positions[s_account] = Position()
+        if i_account not in self.positions:
+            self.positions[i_account] = Position()
+        
+        if s_account != i_account:              # Buying one's own shares does nothing
+            s_pos = self.positions[s_account]
+            i_pos = self.positions[i_account]
+            
+            if standing["direction"] == "buy":
+                s_pos.shares += quantity
+                s_pos.cents -= quantity * price
+                i_pos.shares -= quantity
+                i_pos.cents += quantity * price
+            else:
+                s_pos.shares -= quantity
+                s_pos.cents += quantity * price
+                i_pos.shares += quantity
+                i_pos.cents -= quantity * price
+
+                
+    def create_execution_messages(self, standing, incoming, quantity, price, timestamp):
+
+        standing_execution_msg = EXECUTION_TEMPLATE.format(
+                standing["account"], self.venue, self.symbol, json.dumps(standing),
+                standing["id"], incoming["id"], price, quantity, timestamp,
+                "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
+
+        incoming_execution_msg = EXECUTION_TEMPLATE.format(
+                incoming["account"], self.venue, self.symbol, json.dumps(incoming),
+                standing["id"], incoming["id"], price, quantity, timestamp,
+                "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
+
+        standing_msg_obj = WebsocketMessage(
+                account = standing["account"],
+                venue = self.venue,
+                symbol = self.symbol,
+                msgtype = EXECUTION,
+                msg = standing_execution_msg)
+                                        
+        incoming_msg_obj = WebsocketMessage(
+                account = incoming["account"],
+                venue = self.venue,
+                symbol = self.symbol,
+                msgtype = EXECUTION,
+                msg = incoming_execution_msg)
+        
+        WS_Messages.put(standing_msg_obj)
+        WS_Messages.put(incoming_msg_obj)
+
+    
+    def order_cross(self, standing, incoming, timestamp):
         quantity = min(standing["qty"], incoming["qty"])
         standing["qty"] -= quantity
         standing["totalFilled"] += quantity
@@ -521,59 +576,9 @@ class OrderBook ():
             if o["qty"] == 0:
                 o["open"] = False
         
-        # All the following is just to track "score" for PvP (or PvE) purposes:
-        
-        s_account = standing["account"]
-        i_account = incoming["account"]
-        
-        if s_account not in self.positions:
-            self.positions[s_account] = Position()
-        if i_account not in self.positions:
-            self.positions[i_account] = Position()
-        
-        s_pos = self.positions[s_account]
-        i_pos = self.positions[i_account]
-        
-        if standing["direction"] == "buy":
-            s_pos.shares += quantity
-            s_pos.cents -= quantity * price
-            i_pos.shares -= quantity
-            i_pos.cents += quantity * price
-        else:
-            s_pos.shares -= quantity
-            s_pos.cents += quantity * price
-            i_pos.shares += quantity
-            i_pos.cents -= quantity * price
-        
-        # And the following is for the executions websocket:
+        self.update_scores_from_cross(standing, incoming, quantity, price)
         
         if self.websockets_flag:
-        
-            standing_execution_msg = EXECUTION_TEMPLATE.format(
-                    standing["account"], self.venue, self.symbol, json.dumps(standing),
-                    standing["id"], incoming["id"], price, quantity, timestamp,
-                    "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
+            self.create_execution_messages(standing, incoming, quantity, price, timestamp)
 
-            incoming_execution_msg = EXECUTION_TEMPLATE.format(
-                    incoming["account"], self.venue, self.symbol, json.dumps(incoming),
-                    standing["id"], incoming["id"], price, quantity, timestamp,
-                    "false" if standing["open"] else "true", "false" if incoming["open"] else "true")
-
-            standing_msg_obj = WebsocketMessage(
-                                    account = standing["account"],
-                                    venue = self.venue,
-                                    symbol = self.symbol,
-                                    msgtype = EXECUTION,
-                                    msg = standing_execution_msg)
-                                            
-            incoming_msg_obj = WebsocketMessage(
-                                    account = incoming["account"],
-                                    venue = self.venue,
-                                    symbol = self.symbol,
-                                    msgtype = EXECUTION,
-                                    msg = incoming_execution_msg)
-            
-            WS_Messages.put(standing_msg_obj)
-            WS_Messages.put(incoming_msg_obj)
-        
         return (price, quantity)

@@ -5,3 +5,4 @@ __pycache__/
 launch_on_8005.bat
 launch_with_auth.bat
 launch_with_excess_and_ws.bat
+launch_with_excess_and_ws_8005.bat
