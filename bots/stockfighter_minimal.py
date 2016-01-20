@@ -81,11 +81,14 @@ class Order():
         return super().__getattribute__(name)
     
     def as_json(self):
+        return json.dumps(self.as_dict())
+    
+    def as_dict(self):
         resultdict = dict()
         for attribute in self.attributes:
             val = getattr(self, attribute)
             resultdict[attribute] = val
-        return json.dumps(resultdict)
+        return resultdict
     
     def dump(self):
         for attribute in self.attributes:
@@ -118,7 +121,10 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
 
     try:
         if postdata is not None:
-            raw = requests.post(url, data = postdata, headers = _extra_headers)
+            if isinstance(postdata, dict):
+                raw = requests.post(url, json = postdata, headers = _extra_headers)
+            else:
+                raw = requests.post(url, data = postdata, headers = _extra_headers)
         elif deletemethod:
             raw = requests.delete(url, headers = _extra_headers)
         else:
@@ -172,10 +178,10 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
 
 
 def execute(order, verbose = False):
-	return get_json_from_url(_API_URL + "venues/{}/stocks/{}/orders".format(order.venue, order.stock), postdata = order.as_json(), verbose = verbose)
+	return get_json_from_url(_API_URL + "venues/{}/stocks/{}/orders".format(order.venue, order.stock), postdata = order.as_dict(), verbose = verbose)
 
 def execute_d(di, verbose = False):
-    return get_json_from_url(_API_URL + "venues/{}/stocks/{}/orders".format(di["venue"], di["stock"]), postdata = json.dumps(di), verbose = verbose)
+    return get_json_from_url(_API_URL + "venues/{}/stocks/{}/orders".format(di["venue"], di["stock"]), postdata = di, verbose = verbose)
 
 def cancel(venue, symbol, id, verbose=False, require_ok=True):
     return get_json_from_url(_API_URL + "venues/{}/stocks/{}/orders/{}".format(venue, symbol, id), deletemethod = True, verbose = verbose, require_ok = require_ok)
