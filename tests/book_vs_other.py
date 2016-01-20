@@ -8,15 +8,16 @@ import time
 import stockfighter_minimal as sf
 
 
+
 API_URL_1 = "http://127.0.0.1:8005/ob/api/"
-API_KEY_1 = "unused"
+API_KEY_1 = "fixme"
 
 API_URL_2 = "http://127.0.0.1:8000/ob/api/"
 API_KEY_2 = "fixme"
 
-ACCOUNT_1 = "DISORDERTEST"
-VENUE_1 = "SELLEX"
-SYMBOL_1 = "CATS"
+ACCOUNT_1 = "SOMEONE"
+VENUE_1 = "OBEX"
+SYMBOL_1 = "NYC"
 
 ACCOUNT_2 = "EXB123456"
 VENUE_2 = "TESTEX"
@@ -91,8 +92,8 @@ discrepancies = 0
 
 
 for n in range(TEST_SIZE):
-    INFO.price = random.randint(1, 100)
-    INFO.qty = random.randint(1, 100)
+    INFO.price = random.randint(1, 10)
+    INFO.qty = random.randint(1, 10)
     INFO.direction = random.choice(["buy", "sell"])
     INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
     
@@ -150,6 +151,7 @@ for n in range(TEST_SIZE):
                 print("ORDER RESULT: {}: {} vs {}".format(field, res1[field], res2[field]))
         except KeyError:
             if field in res1 or field in res2:
+                print("{} missing from one result.".format(field))
                 discrepancies += 1
     
     if results_match:
@@ -170,6 +172,7 @@ for n in range(TEST_SIZE):
                 quotes_match = False
         except KeyError:
             if field in q1 or field in q2:
+                print("{} missing from one quote.".format(field))
                 discrepancies += 1
     
     if quotes_match:
@@ -185,6 +188,7 @@ for n in range(TEST_SIZE):
         
         print("\nIssued a cancel.")
 
+    print("\n{} discrepancies.\n".format(discrepancies))
     print()
     # time.sleep(0.1)
 
