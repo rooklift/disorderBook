@@ -23,7 +23,7 @@ There is no authentication by default. If you want authentication, edit `account
 * Two stupid bots are included - you must start them (or many copies) manually
 * Scores can be accessed at &nbsp; **/ob/api/venues/&lt;venue&gt;/stocks/&lt;symbol&gt;/scores** &nbsp; (accessing this with your bots is cheating though)
 
-## Issues / poor design choices
+## Issues
 
 * Everything persists forever; we will *eventually* run out of RAM
 
