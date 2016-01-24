@@ -35,7 +35,7 @@ sf.execute(INFO)
 INFO.direction = "sell"
 sf.execute(INFO)
 
-starttime = time.clock()
+starttime = time.time()
 n = 0
 
 print("Running for {} seconds...".format(TEST_TIME))
@@ -47,7 +47,7 @@ while 1:
 	INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
 	res = sf.execute(INFO)
 	n += 1
-	if time.clock() - starttime > TEST_TIME:
+	if time.time() - starttime > TEST_TIME:
 		break
 
 print("{} orders placed in {} seconds".format(n, TEST_TIME))
