@@ -46,4 +46,4 @@ If you want either of these features, put it behind a reverse proxy like NGINX.
 
 ## C version
 
-A version with the backend in C [now exists](https://github.com/fohristiwhirl/disorderCook). Sadly, this doesn't lead to the sort of speedups you might hope (the bottleneck seems to be the frontend).
+A version made from C and Go [now exists](https://github.com/fohristiwhirl/disorderCook), it might be faster.
