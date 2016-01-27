@@ -46,4 +46,4 @@ If you want either of these features, put it behind a reverse proxy like NGINX.
 
 ## C version
 
-A version made from C and Go [now exists](https://github.com/fohristiwhirl/disorderCook), it might be faster.
+A version made with C and Go [now exists](https://github.com/fohristiwhirl/disorderCook), it might be faster (but it currently lacks WebSockets).
