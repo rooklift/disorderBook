@@ -44,6 +44,6 @@ If you want either of these features, put it behind a reverse proxy like NGINX.
 * rjsamson
 * rami
 
-## C version
+## C+Go version
 
-A version made with C and Go [now exists](https://github.com/fohristiwhirl/disorderCook), it might be faster (but it currently lacks WebSockets).
+A version made with C and Go [now exists](https://github.com/fohristiwhirl/disorderCook), it's faster.
