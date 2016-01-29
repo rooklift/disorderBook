@@ -32,11 +32,11 @@ class Order():
         "direction" : str,
         "orderType" : str
     }
-    
+
     synonyms = {
         "symbol" : "stock"
     }
-    
+
     attributes = attributes_and_types.keys()
 
     def __init__(self, att_dict=None):
@@ -45,7 +45,7 @@ class Order():
 
         # Simplest just to do the above even when the caller has tried to provide values.
         # So if the following fails in anyway we will still have None.
-        
+
         if type(att_dict) is dict:
             for key in att_dict.keys():
                 try:
@@ -56,10 +56,10 @@ class Order():
             pass
         else:
             print("Ignoring non-dictionary argument.")
-    
+
     # Our own __setattr__ forbids the addition of any other attributes,
     # as well as ensuring the attribute has the correct type or None
-    
+
     def __setattr__(self, name, val):
         if name in self.synonyms:
             name = self.synonyms[name]
@@ -74,45 +74,45 @@ class Order():
                 print("Unable to convert {} to type {}".format(val, correct_type))
                 return
         super().__setattr__(name, val)
-    
+
     def __getattr__(self, name):
         if name in self.synonyms:
             name = self.synonyms[name]
         return super().__getattribute__(name)
-    
+
     def as_json(self):
         return json.dumps(self.as_dict())
-    
+
     def as_dict(self):
         resultdict = dict()
         for attribute in self.attributes:
             val = getattr(self, attribute)
             resultdict[attribute] = val
         return resultdict
-    
+
     def dump(self):
         for attribute in self.attributes:
             val = getattr(self, attribute)
             print("{} = {}".format(attribute, val if val is not None else ""))
-    
+
     def set_to_buy(self):
         self.direction = "buy"
-    
+
     def set_to_sell(self):
         self.direction = "sell"
-    
+
     def set_to_limit(self):
         self.orderType = "limit"
-    
+
     def set_to_ioc(self):
         self.orderType = "immediate-or-cancel"
-    
+
     def set_to_fok(self):
         self.orderType = "fill-or-kill"
-    
+
     def set_to_market(self):
         self.orderType = "market"
-    
+
     def copy(self):
         return copy.copy(self)
 
@@ -135,18 +135,18 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
     except requests.exceptions.ConnectionError:
         print("ERROR -- requests.exceptions.ConnectionError")
         return None
-    
+
     # We got some sort of reply...
-    
+
     try:
         result = raw.json()
     except ValueError:
         print(raw.text)
         print("RESULT WAS NOT VALID JSON.")
         return None
-    
+
     # The reply was valid JSON...
-    
+
     if not isinstance(result, dict):
         if superverbose:
             print(raw.status_code)
@@ -154,9 +154,9 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
         print(raw.text)
         print("RESULT WAS JSON BUT NOT A DICT.")
         return None
-        
+
     # The reply was a valid JSON dictionary...
-    
+
     if require_ok:
         if "ok" not in result:
             print(raw.text)
@@ -166,14 +166,14 @@ def get_json_from_url(url, postdata = None, deletemethod = False, verbose = Fals
             print(raw.text)
             print("THE 'ok' FIELD WAS NOT TRUE.")
             return None
-    
+
     # All tests have passed. Nothing has been printed (since we only print errors).
-    
+
     if superverbose:
         print(raw.headers)
     if verbose:
         print(raw.text)
-    
+
     return result
 
 
@@ -198,25 +198,25 @@ def parse_fills_from_response(response, verbose = False):
     # Parse (many) fills from a single cancel (or status) request and return the net change in my shares and my cents...
 
     return_dict = {"shares" : 0, "cents" : 0, "fills" : 0}        # These are deltas, which the calling function must add to its tally
-    
+
     if response is None:
         print("Couldn't parse fills... response is None.")
         return return_dict
-    
+
     try:
         fills = response["fills"]
         direction = response["direction"]
     except:
         print("Couldn't find needed fields in response.")
         return return_dict
-    
+
     for fill in fills:
         return_dict["fills"] += 1
         try:
             qty = fill["qty"]
             price = fill["price"]
             timestamp = fill["ts"]
-            
+
             if direction == "buy":
                 if verbose:
                     print("Bought {} shares at ${}".format(qty, price / 100))
@@ -227,9 +227,9 @@ def parse_fills_from_response(response, verbose = False):
                     print("Sold {} shares at ${}".format(qty, price / 100))
                 return_dict["cents"] += qty * price
                 return_dict["shares"] -= qty
-            
+
         except:
             print("Unexpected error while parsing a fill.")
             continue
-    
+
     return return_dict
