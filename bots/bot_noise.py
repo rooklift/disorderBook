@@ -11,7 +11,7 @@ def main():
     global account
     global venue
     global symbol
-    
+
     orderType = "limit"
     all_orders = []
 
@@ -23,10 +23,12 @@ def main():
         except:
             price = 5000
         price += random.randint(-100, 100)
+        if price < 0:
+            price = 0
         qty = 100
         qty += random.randint(-50, 50)
         direction = random.choice(["buy", "sell"])
-        
+
         r = sf.execute_d(
                 {
                     "price" : price,

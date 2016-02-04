@@ -21,8 +21,8 @@ ACCOUNT_2 = "EXB123456"
 VENUE_2 = "TESTEX"
 SYMBOL_2 = "FOOBAR"
 
-TEST_SIZE = 3000
-SEED = 314778
+TEST_SIZE = 500
+SEED = 1354778
 
 
 random.seed(SEED)
@@ -45,7 +45,7 @@ def set_from_account_2(order):
 
 def clear_the_books():
     global INFO
-    
+
     INFO.qty = 999999
     INFO.orderType = "market"
     INFO.direction = "buy"
@@ -94,7 +94,7 @@ for n in range(TEST_SIZE):
     INFO.qty = random.randint(1, 10)
     INFO.direction = random.choice(["buy", "sell"])
     INFO.orderType = random.choice(["limit", "limit", "limit", "limit", "market", "immediate-or-cancel", "fill-or-kill"])
-    
+
     set_from_account_1(INFO)
     res1 = sf.execute(INFO)
     id1 = res1["id"]
@@ -104,7 +104,7 @@ for n in range(TEST_SIZE):
         last_id_1 = id1
     q1 = sf.quote(INFO.venue, INFO.symbol)
     o1 = sf.orderbook(INFO.venue, INFO.symbol)
-        
+
     set_from_account_2(INFO)
     res2 = sf.execute(INFO)
     id2 = res2["id"]
@@ -114,9 +114,9 @@ for n in range(TEST_SIZE):
         last_id_2 = id2
     q2 = sf.quote(INFO.venue, INFO.symbol)
     o2 = sf.orderbook(INFO.venue, INFO.symbol)
-    
+
     print("IDs (adjusted, should match): {}, {} ----- {} {} @ {} ({})".format(id1 - first_id_1, id2 - first_id_2, INFO.direction, INFO.qty, INFO.price, INFO.orderType))
-    
+
     bids_match = False
     asks_match = False
     if o1["bids"] == o2["bids"]:
@@ -127,14 +127,14 @@ for n in range(TEST_SIZE):
         bids_match = True
     if (not o1["asks"]) and (not o2["asks"]):
         asks_match = True
-    
+
     if bids_match and asks_match:
         print("Books MATCH")
     else:
         discrepancies += 1
         print(o1["bids"], o1["asks"])
         print(o2["bids"], o2["asks"])
-    
+
     results_match = True
     for field in ("direction", "originalQty", "price", "totalFilled", "qty", "open"):
         if field not in res1:
@@ -151,16 +151,16 @@ for n in range(TEST_SIZE):
             if field in res1 or field in res2:
                 print("{} missing from one result.".format(field))
                 discrepancies += 1
-    
+
     if results_match:
         print("Results MATCH", end = " --- ")
         fills = res1["fills"]
-        for fill in fills:  
+        for fill in fills:
             print({"price" : fill["price"], "qty" : fill["qty"]}, end = "")
         print()
     else:
         discrepancies += 1
-    
+
     quotes_match = True
     for field in ("ask", "askSize", "askDepth", "bid", "bidSize", "bidDepth", "last", "lastSize"):
         try:
@@ -172,18 +172,18 @@ for n in range(TEST_SIZE):
             if field in q1 or field in q2:
                 print("{} missing from one quote.".format(field))
                 discrepancies += 1
-    
+
     if quotes_match:
         print("Quotes MATCH")
-    
+
     # Randomly cancel a slightly old order with p = 33%
-    
+
     if random.choice([True, False, False]):
         set_from_account_1(INFO)
         c1 = sf.cancel(INFO.venue, INFO.symbol, id1 - 5)
         set_from_account_2(INFO)
         c2 = sf.cancel(INFO.venue, INFO.symbol, id2 - 5)
-        
+
         print("\nIssued a cancel.")
 
     print("\n{} discrepancies.\n".format(discrepancies))
@@ -196,4 +196,3 @@ print()
 print("Discrepancies:", discrepancies)
 
 input()
-
