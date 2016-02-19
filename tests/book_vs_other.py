@@ -13,16 +13,16 @@ API_KEY_1 = "fixme"
 API_URL_2 = "http://127.0.0.1:8000/ob/api/"
 API_KEY_2 = "fixme"
 
-ACCOUNT_1 = "SOMEONE"
-VENUE_1 = "OBEX"
-SYMBOL_1 = "NYC"
+ACCOUNT_1 = "EXB123456"
+VENUE_1 = "FOREX"
+SYMBOL_1 = "BREQ"
 
 ACCOUNT_2 = "EXB123456"
-VENUE_2 = "TESTEX"
-SYMBOL_2 = "FOOBAR"
+VENUE_2 = "FOREX"
+SYMBOL_2 = "BREQ"
 
 TEST_SIZE = 500
-SEED = 1354778
+SEED = 1454778
 
 
 random.seed(SEED)
@@ -88,6 +88,9 @@ clear_the_books()
 
 discrepancies = 0
 
+cancel_list_1 = []
+cancel_list_2 = []
+
 
 for n in range(TEST_SIZE):
     INFO.price = random.randint(1, 10)
@@ -115,7 +118,8 @@ for n in range(TEST_SIZE):
     q2 = sf.quote(INFO.venue, INFO.symbol)
     o2 = sf.orderbook(INFO.venue, INFO.symbol)
 
-    print("IDs (adjusted, should match): {}, {} ----- {} {} @ {} ({})".format(id1 - first_id_1, id2 - first_id_2, INFO.direction, INFO.qty, INFO.price, INFO.orderType))
+    print("IDs (adjusted): {} ({}), {} ({}) ----- {} {} @ {} ({})".format(
+            id1, id1 - first_id_1, id2, id2 - first_id_2, INFO.direction, INFO.qty, INFO.price, INFO.orderType))
 
     bids_match = False
     asks_match = False
@@ -172,19 +176,28 @@ for n in range(TEST_SIZE):
             if field in q1 or field in q2:
                 print("{} missing from one quote.".format(field))
                 discrepancies += 1
+                quotes_match = False
+                pass
 
     if quotes_match:
         print("Quotes MATCH")
 
-    # Randomly cancel a slightly old order with p = 33%
+    # Randomly mark some orders for cancellation later...
 
-    if random.choice([True, False, False]):
+    if random.random() < 0.333:
+        cancel_list_1.append(res1["id"])
+        cancel_list_2.append(res2["id"])
+
+    if len(cancel_list_1) > 5:
         set_from_account_1(INFO)
-        c1 = sf.cancel(INFO.venue, INFO.symbol, id1 - 5)
-        set_from_account_2(INFO)
-        c2 = sf.cancel(INFO.venue, INFO.symbol, id2 - 5)
+        c1 = sf.cancel(INFO.venue, INFO.symbol, cancel_list_1[0])
+        cancel_list_1.pop(0)
 
-        print("\nIssued a cancel.")
+        set_from_account_2(INFO)
+        c2 = sf.cancel(INFO.venue, INFO.symbol, cancel_list_2[0])
+        cancel_list_2.pop(0)
+
+        print("\nIssued a cancel")
 
     print("\n{} discrepancies.\n".format(discrepancies))
     print()
