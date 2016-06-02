@@ -24,7 +24,7 @@ EXECUTION_TEMPLATE = '''
 
 
 def current_timestamp():
-    ts = str(datetime.datetime.utcnow().isoformat())        # Thanks to medecau for this
+    ts = str(datetime.datetime.utcnow().isoformat()) + 'Z'       # Thanks to medecau for this
     return ts
 
 
