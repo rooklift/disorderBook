@@ -15,6 +15,8 @@
 import json
 import optparse
 import threading
+import random
+import string
 
 try:
     from bottle import request, response, route, run
@@ -461,6 +463,17 @@ def scores(venue, symbol):
         response.status = 500
         return dict_from_exception(e)
 
+
+@route("/gm/levels/<level>", "POST")
+def start_level(level):
+    return { "account": ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10)),
+             "instanceId": random.randint(0, 99999999),
+             "instructions": {},
+             "ok": True,
+             "secondsPerTradingDay": 5,
+             "venues": [ x for x in all_venues.keys()],
+             "tickers": [ item for sublist in all_venues.values() for item in sublist.keys() ],
+             "balances": { "USD": 0 }, }
 
 @route("/", "GET")
 @route("/ob/api/", "GET")
