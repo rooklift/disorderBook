@@ -67,7 +67,7 @@ def dict_from_exception(e):
 
 def create_book_if_needed(venue, symbol):
     global current_book_count
-    
+
     if venue not in all_venues:
         if opts.maxbooks > 0:
             if current_book_count + 1 > opts.maxbooks:
@@ -91,7 +91,7 @@ def api_key_from_headers(headers):
         except:
             raise NoApiKey
 
-    
+
 # ----------------------------------------------------------------------------------------
 
 # Handlers for the various URLs. Since this is a server that must keep going at all costs,
@@ -150,7 +150,7 @@ def orderbook(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/quote", "GET")
 def quote(venue, symbol):
-    
+
     try:
         create_book_if_needed(venue, symbol)
     except TooManyBooks:
@@ -168,15 +168,15 @@ def quote(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/orders/<id>", "GET")
 def status(venue, symbol, id):
-    
+
     id = int(id)
-    
+
     try:
         create_book_if_needed(venue, symbol)
     except TooManyBooks:
         response.status = 400
         return BOOK_ERROR
-    
+
     try:
 
         account = all_venues[venue][symbol].account_from_order_id(id)
@@ -190,18 +190,18 @@ def status(venue, symbol, id):
             except NoApiKey:
                 response.status = 401
                 return NO_AUTH_ERROR
-        
+
             if account not in auth:
                 response.status = 401
                 return AUTH_WEIRDFAIL
-    
+
             if auth[account] != apikey:
                 response.status = 401
                 return AUTH_FAILURE
-    
+
         ret = all_venues[venue][symbol].get_status(id)
         assert(ret)
-        return ret 
+        return ret
 
     except Exception as e:
         response.status = 500
@@ -210,14 +210,14 @@ def status(venue, symbol, id):
 
 @route("/ob/api/venues/<venue>/accounts/<account>/orders", "GET")
 def status_all_orders(venue, account):
-    
+
     # This can return a stupid amount of data and is disabled by default...
     if not opts.excess:
         response.status = 403
         return DISABLED
-    
+
     try:
-    
+
         if auth:
             try:
                 apikey = api_key_from_headers(request.headers)
@@ -228,11 +228,11 @@ def status_all_orders(venue, account):
             if account not in auth:
                 response.status = 401
                 return AUTH_FAILURE
-    
+
             if auth[account] != apikey:
                 response.status = 401
                 return AUTH_FAILURE
-        
+
         orders = []
 
         if venue in all_venues:
@@ -244,7 +244,7 @@ def status_all_orders(venue, account):
         ret["venue"] = venue
         ret["orders"] = orders
         return ret
-    
+
     except Exception as e:
         response.status = 500
         return dict_from_exception(e)
@@ -263,9 +263,9 @@ def status_all_orders_one_stock(venue, account, symbol):
     except TooManyBooks:
         response.status = 400
         return BOOK_ERROR
-    
+
     try:
-    
+
         if auth:
             try:
                 apikey = api_key_from_headers(request.headers)
@@ -301,21 +301,21 @@ def cancel(venue, symbol, id):
     except TooManyBooks:
         response.status = 400
         return BOOK_ERROR
-    
+
     try:
-    
+
         account = all_venues[venue][symbol].account_from_order_id(id)
         if not account:
             response.status = 404
             return NO_SUCH_ORDER
-    
+
         if auth:
             try:
                 apikey = api_key_from_headers(request.headers)
             except NoApiKey:
                 response.status = 401
                 return NO_AUTH_ERROR
-                
+
             if account not in auth:
                 response.status = 401
                 return AUTH_WEIRDFAIL
@@ -327,7 +327,7 @@ def cancel(venue, symbol, id):
         ret = all_venues[venue][symbol].cancel_order(id)
         assert(ret)
         return ret
-        
+
     except Exception as e:
         response.status = 500
         return dict_from_exception(e)
@@ -344,50 +344,50 @@ def make_order(venue, symbol):
         return BAD_JSON
 
     try:
-    
+
         # Thanks to cite-reader for the following bug-fix:
         # Match behavior of real Stockfighter: recognize both these forms
-        
+
         if "stock" in data:
             symbol_in_data = data["stock"]
         elif "symbol" in data:
             symbol_in_data = data["symbol"]
         else:
             symbol_in_data = symbol
-        
+
         # Note that official SF handles POSTs that lack venue and stock/symbol (using the URL instead)
-        
+
         if "venue" in data:
             venue_in_data = data["venue"]
         else:
             venue_in_data = venue
 
         # Various types of faulty POST...
-        
+
         if venue_in_data != venue or symbol_in_data != symbol:
             response.status = 400
             return URL_MISMATCH
-        
+
         try:
             create_book_if_needed(venue, symbol)
         except TooManyBooks:
             response.status = 400
             return BOOK_ERROR
-        
+
         if auth:
-        
+
             try:
                 account = data["account"]
             except KeyError:
                 response.status = 400
                 return MISSING_FIELD
-        
+
             try:
                 apikey = api_key_from_headers(request.headers)
             except NoApiKey:
                 response.status = 401
                 return NO_AUTH_ERROR
-            
+
             if account not in auth:
                 response.status = 401
                 return AUTH_FAILURE
@@ -410,7 +410,7 @@ def make_order(venue, symbol):
 
         assert(ret)
         return ret
-        
+
     except Exception as e:
         response.status = 500
         return dict_from_exception(e)
@@ -420,29 +420,29 @@ def make_order(venue, symbol):
 
 @route("/ob/api/venues/<venue>/stocks/<symbol>/scores", "GET")
 def scores(venue, symbol):
-    
+
     try:
-    
+
         if venue not in all_venues or symbol not in all_venues[venue]:
             response.status = 404
             return "<pre>No such venue/stock!</pre>"
-        
+
         try:
             currentprice = all_venues[venue][symbol].quote["last"]
         except KeyError:
             return "<pre>No trading activity yet.</pre>"
-        
+
         all_data = []
-        
+
         book_obj = all_venues[venue][symbol]
-        
+
         for account, pos in book_obj.positions.items():
             all_data.append([account, pos.cents, pos.shares, pos.minimum, pos.maximum, pos.cents + pos.shares * currentprice])
-            
+
         all_data = sorted(all_data, key = lambda x : x[5], reverse = True)
-        
+
         table_header = "Account         USD         Shares     Pos.min    Pos.max    NAV"
-        
+
         result_lines = []
         for datum in all_data:        # When in "serious" (authentication) mode, don't show shares and cents
             if not auth:
@@ -451,18 +451,20 @@ def scores(venue, symbol):
             else:
                 result_lines.append("{:<15} [hidden]    [hidden]   {:<10} {:<10} ${:<12}".format(
                                     datum[0], datum[3], datum[4], datum[5] // 100))
-        
+
         res_string = "\n".join(result_lines)
-        
+
         ret = "<pre>{} {}\nCurrent price: ${:.2f}\n\n{}\n{}\n\nStart time:    {}\nCurrent time:  {}</pre>".format(
                     venue, symbol, currentprice / 100, table_header, res_string, book_obj.starttime, disorderBook_book.current_timestamp())
-        
+
         return ret
-    
+
     except Exception as e:
         response.status = 500
         return dict_from_exception(e)
 
+# The following is from elliottneilclark; it returns an official looking GM response;
+# it does show all current venues and stocks.
 
 @route("/gm/levels/<level>", "POST")
 def start_level(level):
@@ -471,27 +473,29 @@ def start_level(level):
              "instructions": {},
              "ok": True,
              "secondsPerTradingDay": 5,
-             "venues": [ x for x in all_venues.keys()],
+             "venues": [ x for x in all_venues.keys() ],
              "tickers": [ item for sublist in all_venues.values() for item in sublist.keys() ],
-             "balances": { "USD": 0 }, }
+             "balances": { "USD": 0 },
+           }
+
 
 @route("/", "GET")
 @route("/ob/api/", "GET")
 def home():
     return """
     <pre>
-    
+
     disorderBook: unofficial Stockfighter server
     https://github.com/fohristiwhirl/disorderBook
-    
+
     By Amtiskaw (Fohristiwhirl on GitHub)
     With help from cite-reader, Medecau and DanielVF
-    
+
     Mad props to patio11 for the elegant fundamental design!
     Also inspired by eu90h's Mockfighter
-    
-    
-    
+
+
+
     "patio11 used go for a good reason" -- Medecau
     </pre>
     """
@@ -502,23 +506,23 @@ def home():
 def create_auth_records():
     global auth
     global opts
-    
+
     with open(opts.accounts_file) as infile:
         auth = json.load(infile)
 
 
 def main():
     global opts
-    
+
     opt_parser = optparse.OptionParser()
-    
+
     opt_parser.add_option(
         "-b", "--maxbooks",
         dest = "maxbooks",
         type = "int",
         help = "Maximum number of books (exchange/ticker combos) [default: %default]")
     opt_parser.set_defaults(maxbooks = 100)
-    
+
     opt_parser.add_option(
         "-v", "--venue",
         dest = "default_venue",
@@ -532,7 +536,7 @@ def main():
         type = "str",
         help = "Default symbol; always exists on default venue [default: %default]")
     opt_parser.set_defaults(default_symbol = "FOOBAR")
-    
+
     opt_parser.add_option(
         "-a", "--accounts",
         dest = "accounts_file",
@@ -546,14 +550,14 @@ def main():
         type = "int",
         help = "Port [default: %default]")
     opt_parser.set_defaults(port = 8000)
-    
+
     opt_parser.add_option(
         "-e", "--extra", "--excess",
         dest   = "excess",
         action = "store_true",
         help   = "Enable commands that can return excessive responses (all orders on venue)")
     opt_parser.set_defaults(excess = False)
-    
+
     opt_parser.add_option(
         "-w", "--ws", "--websocket", "--websockets",
         dest   = "websockets",
@@ -567,27 +571,27 @@ def main():
         type = "int",
         help = "WebSocket Port [default: %default]")
     opt_parser.set_defaults(ws_port = 8001)
-    
+
     opts, __ = opt_parser.parse_args()
-    
+
     create_book_if_needed(opts.default_venue, opts.default_symbol)
-    
+
     if opts.accounts_file:
         create_auth_records()
-    
+
     print("disorderBook starting up on port {}".format(opts.port))
     if opts.websockets:
         print("WebSockets on port {}".format(opts.ws_port))
-    
+
     if not auth:
         print("\n -----> Warning: running WITHOUT AUTHENTICATION! <-----\n")
-    
+
     if opts.websockets:
         ws_thread = threading.Thread(target = disorderBook_ws.start_websockets, args = (opts.ws_port, ))
         ws_thread.start()
-    
+
     run(host = "127.0.0.1", port = opts.port)
-    
+
 
 if __name__ == "__main__":
     main()
